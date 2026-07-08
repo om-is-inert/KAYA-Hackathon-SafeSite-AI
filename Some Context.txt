@@ -1,0 +1,13 @@
+
+Track 4: Open Innovation — Moderate to Hard (variable)
+What to build: Anything solving a real, unaddressed construction problem — cost estimation, safety compliance auditing, drawing/BIM analysis, scheduling optimization, workforce management, etc.
+Why it's variable: Difficulty = whatever you choose. A document-heavy idea (like Track 3) is easy; a vision-heavy or robotics-heavy idea is hard. The risk here is spending your limited hackathon time deciding what to build rather than building it — that's the real cost of this track.
+Core techniques: Whatever fits your chosen problem — could be any combination of the five listed (VLMs, Document Intelligence, Forecasting, Agents, RAG/fine-tuning).
+
+OpenStreetMap (OSM) Exports: The Humanitarian OpenStreetMap Team (HOT) provides an "India Buildings" dataset on the Humanitarian Data Exchange (HDX).  This contains 68+ million building polygon features with attributes like name, levels, materials, and address, updated monthly.
+ 
+Commercial Project Intelligence: Platforms like Biltrax and GlobalData offer comprehensive databases of live construction projects. Biltrax tracks over 59,233 live projects with a total value of $1,240+ billion, while GlobalData tracks over 220,000 projects with tailored datasets for market analysis. 
+
+Cost and Industry Data: The Construction Industry Development Council (CIDC) publishes monthly Construction Cost Indices (CCI) covering 11 sectors, including materials, wages, and fuel, sourced from across the nation. 
+
+Open Data Census: Historical data on building permits is available for cities like Bengaluru, Hyderabad, and Mumbai, though coverage and availability vary by location and year. 
