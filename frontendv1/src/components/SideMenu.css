@@ -1,0 +1,143 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500&display=swap');
+
+.mobile-menu {
+  display: block;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9990;
+  pointer-events: none;
+}
+
+.menu-underlay, .menu-panel {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100vw;
+  max-width: 450px;
+  height: 100vh;
+  border-radius: 0;
+  transform: translateX(-100%);
+  will-change: transform;
+}
+
+.menu-underlay.layer-1 {
+  background-color: #333333;
+  z-index: 1;
+}
+
+.menu-underlay.layer-2 {
+  background-color: #111111;
+  z-index: 2;
+}
+
+.menu-panel {
+  background-color: #FFFFFF;
+  z-index: 3;
+  padding: 6em 0 3em 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.menu-nav {
+  display: flex;
+  flex-direction: column;
+  margin-top: 2rem;
+  border-top: 1px solid #EEEEEE;
+}
+
+.menu-item {
+  display: flex;
+  align-items: flex-start;
+  text-decoration: none;
+  color: #111111;
+  gap: 1rem;
+  padding: 1.5rem 3em 1.5rem calc(3em - 3px);
+  border-bottom: 1px solid #EEEEEE;
+  border-left: 3px solid transparent;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.menu-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: #5A45FF;
+  vertical-align: super;
+  margin-left: 0.25rem;
+  line-height: 0;
+}
+
+.menu-text-wrap {
+  overflow: hidden;
+}
+
+.menu-text {
+  display: block;
+  font-size: 2rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -1px;
+  line-height: 1.2;
+  transition: color 0.2s ease;
+}
+
+.menu-item:hover .menu-text {
+  color: #5A45FF;
+  text-decoration: none;
+}
+
+.menu-footer {
+  margin-top: 4rem;
+  padding: 0 3em;
+}
+
+.footer-label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #5A45FF;
+  margin-bottom: 1.2rem;
+}
+
+.footer-links {
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+}
+
+.footer-links a {
+  text-decoration: none;
+  color: #111111;
+  font-weight: 600;
+  font-size: 1.1rem;
+  transition: color 0.2s ease;
+}
+
+.footer-links a:hover {
+  color: #5A45FF;
+}
+
+/* Close button on menu panel for better UX */
+.menu-close-btn {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #111;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0;
+  transition: background-color 0.2s ease;
+}
+
+.menu-close-btn:hover {
+  background-color: #f0f0f0;
+}

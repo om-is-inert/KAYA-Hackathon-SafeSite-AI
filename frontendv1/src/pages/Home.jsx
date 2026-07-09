@@ -1,0 +1,184 @@
+import { useState, useRef } from 'react';
+import TextPressure from '../components/TextPressure';
+import SideMenu from '../components/SideMenu';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import heroVideo from '../../Assets/606982_Cities_City_3840x2160.mp4';
+import featureImage1 from '../../Assets/pointing-sketch.jpg';
+import featureImage2 from '../../Assets/farbsynthese-village-7133842.jpg';
+import featureImage3 from '../../Assets/11066063-construction-site-4020496.jpg';
+import { Link } from 'react-router-dom';
+
+gsap.registerPlugin(useGSAP, ScrollTrigger);
+
+function Home() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const containerRef = useRef();
+  const heroRef = useRef();
+  const videoRef = useRef();
+  const wordmarkRef = useRef();
+
+  useGSAP(() => {
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: heroRef.current,
+        start: "top top",
+        end: "+=100%", // pin for 100vh extra scrolling
+        pin: true,
+        scrub: 1,
+      }
+    });
+
+    // Animate video background scale
+    tl.to(videoRef.current, { scale: 1.15, ease: "none" }, 0);
+
+    // Fade out wordmark and bottom-left text
+    tl.to(wordmarkRef.current, { opacity: 0, ease: "none" }, 0);
+
+    // Subtle fade in for feature blocks
+    gsap.utils.toArray('.feature-block-fade').forEach(block => {
+      gsap.fromTo(block,
+        { opacity: 0, y: 30 },
+        { 
+          opacity: 1, 
+          y: 0, 
+          duration: 0.8,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: block,
+            start: "top 85%",
+            toggleActions: "play reverse play reverse"
+          }
+        }
+      );
+    });
+  }, { scope: containerRef });
+
+  return (
+    <div ref={containerRef} className="app-container page-transition">
+      <SideMenu isOpen={isMenuOpen} closeMenu={() => setIsMenuOpen(false)} />
+
+      {/* Floating Full-Width Navbar */}
+      <nav className="floating-nav">
+        <div 
+          className="nav-logo" 
+          onClick={() => setIsMenuOpen(prev => !prev)}
+          style={{ cursor: 'pointer' }}
+        >
+          <span className="logo-icon">≣</span>
+          <span className="logo-text">SafeSite AI</span>
+        </div>
+        <ul className="nav-links">
+          <li><a href="#">Company</a></li>
+          <li><a href="#">Platform</a></li>
+          <li><Link to="/compliance-engine">Compliance Engine</Link></li>
+          <li><a href="#">Vision Engine</a></li>
+          <li><a href="#">Team</a></li>
+          <li><a href="#">Investors</a></li>
+          <li><a href="#">News</a></li>
+        </ul>
+        <a href="#" className="nav-cta">Get in Touch</a>
+      </nav>
+
+      {/* Pinned Hero Section */}
+      <div ref={heroRef} className="hero-section">
+        <video 
+          ref={videoRef}
+          className="hero-video"
+          src={heroVideo}
+          autoPlay 
+          loop 
+          muted 
+          playsInline
+        />
+
+        <div ref={wordmarkRef} className="hero-content">
+          {/* Hero Title with React Bits TextPressure Effect */}
+          <div style={{ position: 'relative', width: '80%', height: '300px', zIndex: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <TextPressure
+              text="SafeSite AI"
+              flex={true}
+              alpha={false}
+              stroke={false}
+              width={true}
+              weight={true}
+              italic={true}
+              textColor="#ffffff"
+              strokeColor="#ff0000"
+              minFontSize={36}
+            />
+          </div>
+
+          {/* Bottom Left Text Block */}
+          <div className="bottom-left-info">
+            <p>AI-Powered Site Inspections That<br />Catch Defects Before They Cost You</p>
+          </div>
+        </div>
+
+      </div>
+
+      {/* Standard white-background overview section below the hero */}
+      <section className="overview-section">
+        <div className="overview-container">
+          <div className="overview-columns">
+            <div className="overview-left">
+              <span className="eyebrow-label">What We Do</span>
+            </div>
+            <div className="overview-right">
+              <h3 className="statement-text">
+                Before the first beam goes up, SafeSite AI reviews your site plans and flags defects that would otherwise surface mid-build — when they're far more expensive to fix.
+              </h3>
+              <Link to="/compliance-engine" className="nav-cta cta-large">See How It Works</Link>
+            </div>
+          </div>
+          <div className="feature-blocks">
+            {/* Block 1 */}
+            <div className="feature-block feature-block-fade">
+              <div className="feature-image">
+                <img src={featureImage1} alt="Compliance Engine" />
+              </div>
+              <div className="feature-text">
+                <span className="feature-eyebrow">01 — Compliance Engine</span>
+                <p className="feature-body">
+                  Automatically checks site plans against building codes and safety regulations — catching violations before inspectors do.
+                </p>
+              </div>
+            </div>
+
+            {/* Block 2 */}
+            <div className="feature-block feature-block-fade feature-reverse">
+              <div className="feature-text">
+                <span className="feature-eyebrow">02 — Vision Engine</span>
+                <p className="feature-body">
+                  Computer vision scans job site imagery in real time, flagging structural defects human inspectors miss.
+                </p>
+              </div>
+              <div className="feature-image">
+                <img src={featureImage2} alt="Vision Engine" />
+              </div>
+            </div>
+
+            {/* Block 3 */}
+            <div className="feature-block feature-block-fade">
+              <div className="feature-image">
+                <img src={featureImage3} alt="Foresight Engine" />
+              </div>
+              <div className="feature-text">
+                <span className="feature-eyebrow">03 — Foresight Engine</span>
+                <p className="feature-body">
+                  Predicts where delays and defects are likely to occur next, based on patterns across thousands of past builds.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      {/* Dummy scrollable space to allow scrolling past the overview */}
+      <div style={{ height: '150vh', background: '#FAFAFA' }}></div>
+    </div>
+  );
+}
+
+export default Home;
