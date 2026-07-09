@@ -31,24 +31,45 @@ function Home() {
     });
 
     // Animate video background scale
-    tl.to(videoRef.current, { scale: 1.15, ease: "none" }, 0);
+    tl.to(videoRef.current, { scale: 1.15, ease: "power2.in" }, 0);
 
     // Fade out wordmark and bottom-left text
-    tl.to(wordmarkRef.current, { opacity: 0, ease: "none" }, 0);
+    tl.to(wordmarkRef.current, { opacity: 0, ease: "power2.in" }, 0);
 
-    // Subtle fade in for feature blocks
-    gsap.utils.toArray('.feature-block-fade').forEach(block => {
-      gsap.fromTo(block,
-        { opacity: 0, y: 30 },
+    // Butter smooth scrubbed animations for feature blocks
+    gsap.utils.toArray('.feature-block').forEach(block => {
+      const text = block.querySelector('.feature-text');
+      const img = block.querySelector('.feature-image');
+      
+      // Animate text sliding in from the side
+      gsap.fromTo(text,
+        { opacity: 0, x: block.classList.contains('feature-reverse') ? 50 : -50 },
         { 
           opacity: 1, 
-          y: 0, 
-          duration: 0.8,
-          ease: "power2.out",
+          x: 0, 
+          ease: "power2.in",
           scrollTrigger: {
             trigger: block,
             start: "top 85%",
-            toggleActions: "play reverse play reverse"
+            end: "top 50%",
+            scrub: 1.5
+          }
+        }
+      );
+
+      // Animate image fading and scaling up
+      gsap.fromTo(img,
+        { opacity: 0, scale: 0.95, y: 50 },
+        { 
+          opacity: 1, 
+          scale: 1, 
+          y: 0,
+          ease: "power2.in",
+          scrollTrigger: {
+            trigger: block,
+            start: "top 95%",
+            end: "top 55%",
+            scrub: 1.5
           }
         }
       );
@@ -70,13 +91,11 @@ function Home() {
           <span className="logo-text">SafeSite AI</span>
         </div>
         <ul className="nav-links">
-          <li><a href="#">Company</a></li>
-          <li><a href="#">Platform</a></li>
+          <li><Link to="/">Overview</Link></li>
           <li><Link to="/compliance-engine">Compliance Engine</Link></li>
           <li><a href="#">Vision Engine</a></li>
+          <li><a href="#">Forsight Engine</a></li>
           <li><a href="#">Team</a></li>
-          <li><a href="#">Investors</a></li>
-          <li><a href="#">News</a></li>
         </ul>
         <a href="#" className="nav-cta">Get in Touch</a>
       </nav>

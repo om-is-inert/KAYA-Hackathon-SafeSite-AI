@@ -252,10 +252,11 @@ const TextPressure = ({
             data-char={char}
             style={{
               display: 'inline-block',
-              color: stroke ? undefined : textColor
+              color: stroke ? undefined : textColor,
+              width: char === ' ' ? '0.5em' : 'auto'
             }}
           >
-            {char}
+            {char === ' ' ? '\u00A0' : char}
           </span>
         ))}
       </h1>

@@ -7,7 +7,6 @@
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
   box-sizing: border-box;
 }
 
@@ -15,26 +14,11 @@
   box-sizing: border-box;
 }
 
-.ce-breadcrumb {
-  font-size: 13px;
-  color: #666;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  margin-bottom: 1.5rem;
-}
-
-.ce-breadcrumb a {
-  color: #888;
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.ce-breadcrumb a:hover {
-  color: #fff;
-}
-
 .ce-hero {
-  min-height: 75vh;
+  width: 100%;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
   padding: 4rem;
   display: flex;
   flex-direction: column;
@@ -42,24 +26,50 @@
   align-items: center;
 }
 
+.ce-hero::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1;
+}
+
+.ce-hero-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
 .ce-hero-content {
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
+  position: relative;
+  z-index: 2;
+  margin-top: 8vh; /* Offset for nav bar to visually center */
 }
 
 .ce-title {
   font-family: 'Inter', sans-serif;
-  font-size: 6vw; /* Reduced from 9vw to fit 17 characters */
+  font-size: 7vw;
   font-weight: 200;
+  letter-spacing: 0.3em;
+  color: #FFFFFF;
+  line-height: 1.1;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #111;
-  line-height: 1;
   text-align: center;
-  white-space: nowrap;
   margin: 0;
+  margin-right: -0.3em;
+  transform: scaleY(1.6);
+  transform-origin: center;
 }
 
 .ce-details-toggle {
@@ -116,91 +126,86 @@
   color: #333;
 }
 
-/* Metadata Rows */
-.ce-meta-rows {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  width: 100%;
-  max-width: 600px;
-}
-
-.ce-meta-row {
-  display: grid;
-  grid-template-columns: 200px 1fr;
-  align-items: center;
-}
-
-.ce-meta-label {
-  font-size: 14px;
-  color: #666;
-  font-weight: 500;
-}
-
-.ce-pill-group {
-  display: flex;
-  gap: 0.5rem;
-}
-
 /* Stat Cards */
 .ce-stats-section {
+  position: relative;
+  z-index: 5;
   background-color: #FAFAFA;
-  padding: 8rem 4rem;
+  padding: 8rem 4rem 20rem 4rem;
   border-top: 1px solid #E5E5E5;
   border-bottom: 1px solid #E5E5E5;
 }
 
-.ce-stat-cards {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-}
-
-.ce-stat-card {
-  background-color: #FFFFFF;
-  border: 1px solid #E5E5E5;
-  border-radius: 0; /* Sharp corners */
-  padding: 2.5rem;
+.ce-zigzag-blocks {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  transition: box-shadow 0.2s, transform 0.2s;
+  gap: 160px;
+  max-width: 1500px;
+  margin: 0 auto;
 }
 
-.ce-stat-card:hover {
-  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-  transform: translateY(-2px);
-}
-
-.ce-stat-top {
-  display: flex;
-  justify-content: space-between;
+.ce-zigzag-block {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
   align-items: center;
-  margin-bottom: 0.5rem;
 }
 
-.ce-stat-title {
-  font-size: 14px;
-  color: #666;
+.ce-zigzag-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.ce-zigzag-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(32px, 3.5vw, 60px);
   font-weight: 600;
+  color: #5a45ff; /* Blue text */
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap; /* To prevent pill pushing out */
 }
 
-.ce-stat-value {
-  font-size: 4.5rem;
+.ce-zigzag-body {
+  font-size: clamp(24px, 2.5vw, 42px);
+  font-weight: 500;
+  line-height: 1.35;
+  color: #111;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.ce-zigzag-value-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.ce-zigzag-value {
+  font-size: clamp(12rem, 18vw, 24rem); /* Massive number */
   font-weight: 700;
   color: #111;
   line-height: 1;
+  letter-spacing: -0.05em;
 }
 
-.ce-stat-sub {
-  font-size: 14px;
-  color: #888;
-  margin-top: auto;
+@media (max-width: 768px) {
+  .ce-zigzag-block {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  .ce-zigzag-value {
+    font-size: 8rem;
+  }
 }
 
 /* Workspace */
 .ce-workspace-section {
+  position: relative;
+  z-index: 10;
   background-color: #FFFFFF;
   padding: 8rem 4rem 8rem 4rem;
 }
@@ -217,10 +222,13 @@
 }
 
 .ce-section-title {
-  font-size: 18px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 24px;
   font-weight: 600;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
   color: #111;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 }
 
 .ce-mt-4 {
@@ -239,7 +247,7 @@
   border: 1px solid #E5E5E5;
   color: #666;
   padding: 12px 16px;
-  border-radius: 999px; /* Rounded pill style */
+  border-radius: 0; /* Sharp border */
   font-size: 14px;
   font-weight: 500;
   text-align: left;
@@ -248,9 +256,10 @@
 }
 
 .ce-code-btn-active {
-  background-color: rgba(90, 69, 255, 0.08);
-  border-color: #5a45ff;
-  color: #5a45ff;
+  background-color: #FFFFFF;
+  border-color: #111;
+  color: #111;
+  font-weight: 600;
 }
 
 /* Dropzone */
@@ -295,11 +304,13 @@
 .ce-empty-state {
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  padding: 4rem 2rem;
+  background-color: #FAFAFA;
+  border: 1px solid #E5E5E5;
   text-align: center;
-  height: 100%;
-  padding: 4rem;
+  border-radius: 0;
   gap: 0.5rem;
 }
 
