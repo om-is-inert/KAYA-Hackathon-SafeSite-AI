@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SafeSite AI — 3-Layer Construction Intelligence Platform built with Notion UI aesthetics.">
+  <title>SafeSite AI — Construction Intelligence</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body data-theme="dark">
+  <div class="app-container">
+    <!-- ═══ Minimalist Notion Sidebar ═══ -->
+    <aside class="sidebar" id="sidebar">
+      <div class="workspace-header" onclick="alert('SafeSite AI Workspace — KAYA Hackathon Track 4')">
+        <div class="workspace-icon">🏗️</div>
+        <div class="workspace-name">SafeSite AI</div>
+        <div class="workspace-chevron">⌄</div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-label">ENGINES</div>
+        <div class="nav-item active" data-tab="compliance" id="nav-compliance">
+          <span class="nav-icon">📐</span>
+          <span>Compliance Engine</span>
+          <span class="nav-badge" id="badge-violations" style="display:none">0</span>
+        </div>
+        <div class="nav-item" data-tab="vision" id="nav-vision">
+          <span class="nav-icon">🔍</span>
+          <span>Vision Engine</span>
+          <span class="nav-badge" id="badge-defects" style="display:none">0</span>
+        </div>
+        <div class="nav-item" data-tab="foresight" id="nav-foresight">
+          <span class="nav-icon">🔮</span>
+          <span>Foresight Engine</span>
+        </div>
+      </div>
+
+      <div class="nav-section" style="margin-top:auto">
+        <div class="nav-label">REGULATORY DATA</div>
+        <div class="nav-item" onclick="ingestCodes()">
+          <span class="nav-icon">📚</span>
+          <span>Ingest Building Codes</span>
+        </div>
+        <div class="nav-item" onclick="toggleTheme()">
+          <span class="nav-icon" id="theme-nav-icon">☀️</span>
+          <span id="theme-nav-text">Light Mode</span>
+        </div>
+      </div>
+
+      <div style="padding: 4px 8px; margin-top: 8px; border-top: 1px solid var(--border-sidebar); padding-top: 12px;">
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-secondary);">
+          <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--tag-green-text);" id="loop-dot"></span>
+          <span id="loop-status" style="font-weight: 500;">Closed Loop Idle</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ═══ Main Wrapper (Topbar + Document Page) ═══ -->
+    <div class="main-wrapper">
+      <!-- Sticky Topbar / Breadcrumb -->
+      <header class="topbar">
+        <div class="breadcrumb">
+          <span>SafeSite AI</span>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-current" id="breadcrumb-title">Compliance Engine</span>
+        </div>
+        <div class="topbar-actions">
+          <span class="tag-pill tag-green" id="topbar-health-pill">Health: 100%</span>
+          <button class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Notion Light/Dark Mode">
+            <span id="theme-btn-icon">☀️</span>
+            <span id="theme-btn-text">Light Mode</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Main Document Page -->
+      <main class="main-content">
+        <!-- Document Page Header -->
+        <div class="page-header">
+          <div class="page-icon-lg" id="page-icon">📐</div>
+          <h1 class="page-title" id="page-title">Compliance Engine</h1>
+        </div>
+
+        <!-- Notion Page Properties Table -->
+        <div class="properties-table">
+          <div class="property-row">
+            <div class="property-label"><span>Status</span></div>
+            <div class="property-value"><span class="tag-pill tag-blue" id="prop-status">Active — Pre-Construction</span></div>
+          </div>
+          <div class="property-row">
+            <div class="property-label"><span>Regulatory Scope</span></div>
+            <div class="property-value" id="prop-scope">
+              <span class="tag-pill tag-purple">NBC India 2016 Part IV</span>
+              <span class="tag-pill tag-purple">IS 456:2000</span>
+            </div>
+          </div>
+          <div class="property-row">
+            <div class="property-label"><span>AI Core</span></div>
+            <div class="property-value"><span class="tag-pill tag-gray" id="prop-ai">Gemini 2.5 Flash VLM + ChromaDB RAG</span></div>
+          </div>
+          <div class="property-row">
+            <div class="property-label"><span>Closed-Loop Sync</span></div>
+            <div class="property-value"><span class="tag-pill tag-green" id="prop-loop">Integrated with Vision & Foresight</span></div>
+          </div>
+        </div>
+
+        <!-- Project Health Summary Cards (Notion Database Metrics) -->
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-label">Composite Health</span>
+              <span class="tag-pill tag-green" id="m-health-pill">Pass</span>
+            </div>
+            <div class="metric-value" id="m-health">100</div>
+            <div class="metric-desc">Across all 3 layers</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-label">Design Flaws</span>
+              <span class="tag-pill tag-gray" id="m-violations-pill">Layer 1</span>
+            </div>
+            <div class="metric-value" id="m-violations">0</div>
+            <div class="metric-desc">Blueprint check</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-label">As-Built Defects</span>
+              <span class="tag-pill tag-gray" id="m-defects-pill">Layer 2</span>
+            </div>
+            <div class="metric-value" id="m-defects">0</div>
+            <div class="metric-desc">Site inspection</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-label">On-Time Probability</span>
+              <span class="tag-pill tag-gray" id="m-ontime-pill">Layer 3</span>
+            </div>
+            <div class="metric-value" id="m-ontime">—</div>
+            <div class="metric-desc">10,000x simulation</div>
+          </div>
+        </div>
+
+        <!-- ═══ Tab 1: Compliance Engine ═══ -->
+        <div class="tab-panel active" id="panel-compliance">
+          <div class="callout-block">
+            <div class="callout-icon">💡</div>
+            <div class="callout-content">
+              <strong>Pre-Construction Regulatory Audit:</strong> Upload architectural drawings or floor plans. Our agentic VLM extracts spatial dimensions and cross-references them against retrieved clauses from NBC 2016 & IS 456 using semantic RAG.
+            </div>
+          </div>
+
+          <div class="layout-2col">
+            <div>
+              <div class="section-title">
+                <span>1. Select Building Codes</span>
+              </div>
+              <div class="checkbox-group" id="code-select">
+                <label class="notion-checkbox checked">
+                  <input type="checkbox" value="NBC 2016 Part IV" checked>
+                  <span>✓ NBC 2016 Part IV (Fire & Life Safety)</span>
+                </label>
+                <label class="notion-checkbox checked">
+                  <input type="checkbox" value="IS 456:2000" checked>
+                  <span>✓ IS 456:2000 (Reinforced Concrete)</span>
+                </label>
+              </div>
+
+              <div class="section-title">
+                <span>2. Upload Floor Plan / Blueprint</span>
+              </div>
+              <div class="upload-box" id="upload-blueprint">
+                <div class="upload-icon-sm">📐</div>
+                <div class="upload-title">Drop blueprint here or click to upload</div>
+                <div class="upload-hint">Supports PDF, PNG, JPG (architectural layouts, floor plans)</div>
+                <input type="file" accept=".pdf,.png,.jpg,.jpeg,.webp" id="input-blueprint">
+              </div>
+
+              <div id="blueprint-preview" style="display:none; margin-top: 16px; position: relative;">
+                <img id="blueprint-img" style="width:100%; border-radius: var(--radius-md); border: 1px solid var(--border);">
+                <div class="scanning-overlay" id="scan-overlay">
+                  <div class="notion-spinner"></div>
+                  <div style="font-size: 14px; font-weight: 500; color: var(--text-main-hex);">VLM Extracting Spatial Data & Running RAG Audit...</div>
+                </div>
+              </div>
+
+              <div id="compliance-score-section" style="display:none; margin-top: 24px; text-align: center;">
+                <div class="notion-box" style="display: inline-block; padding: 16px 32px;">
+                  <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">COMPLIANCE RATING</div>
+                  <div style="font-size: 32px; font-weight: 700; color: var(--accent-primary);" id="compliance-score-val">100</div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="section-title">
+                <span>Identified Violations</span>
+                <span class="tag-pill tag-gray" id="violation-count-badge" style="display:none">0 items</span>
+              </div>
+              <div id="violations-list" class="results-scroll">
+                <div class="empty-notion">
+                  <div class="empty-notion-icon">🔍</div>
+                  <div style="font-weight: 500; color: var(--text-secondary); margin-bottom: 4px;">No Violations Detected Yet</div>
+                  <div style="font-size: 13px;">Upload an architectural layout to start compliance verification.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ Tab 2: Vision Engine ═══ -->
+        <div class="tab-panel" id="panel-vision">
+          <div class="callout-block">
+            <div class="callout-icon">🏗️</div>
+            <div class="callout-content">
+              <strong>Active Construction Quality Control:</strong> Upload drone scans or site inspection photographs. The Vision Engine detects concrete cracks, honeycombing, exposed rebar, and spalling with pixel-accurate bounding boxes and IS 456 remediation guidelines.
+            </div>
+          </div>
+
+          <div class="layout-2col">
+            <div>
+              <div class="section-title">
+                <span>1. Upload Site Inspection Photo</span>
+              </div>
+              <div class="upload-box" id="upload-site-photo">
+                <div class="upload-icon-sm">📷</div>
+                <div class="upload-title">Drop site photograph here or click to upload</div>
+                <div class="upload-hint">Supports PNG, JPG, WEBP (columns, slabs, reinforcement, formwork)</div>
+                <input type="file" accept=".png,.jpg,.jpeg,.webp" id="input-site-photo">
+              </div>
+
+              <div id="site-photo-preview" style="display:none; margin-top: 16px; position: relative;">
+                <img id="site-photo-img" style="width:100%; border-radius: var(--radius-md); border: 1px solid var(--border);">
+                <div class="scanning-overlay" id="defect-scan-overlay">
+                  <div class="notion-spinner"></div>
+                  <div style="font-size: 14px; font-weight: 500; color: var(--text-main-hex);">Running Vision Defect Analysis & BIM Alignment...</div>
+                </div>
+                <canvas id="defect-canvas" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; border-radius: var(--radius-md);"></canvas>
+              </div>
+
+              <div id="vision-condition" style="display:none; margin-top: 20px;">
+                <div class="layout-3col">
+                  <div class="metric-card">
+                    <div class="metric-label">Structural Condition</div>
+                    <div class="metric-value" id="overall-condition" style="font-size: 18px; margin-top: 4px;">—</div>
+                  </div>
+                  <div class="metric-card">
+                    <div class="metric-label">Est. Rework Cost</div>
+                    <div class="metric-value" id="repair-cost" style="font-size: 18px; margin-top: 4px; color: var(--tag-red-text);">—</div>
+                  </div>
+                  <div class="metric-card">
+                    <div class="metric-label">Est. Repair Time</div>
+                    <div class="metric-value" id="repair-time" style="font-size: 18px; margin-top: 4px; color: var(--tag-orange-text);">—</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="section-title">
+                <span>Detected Structural Defects</span>
+                <span class="tag-pill tag-gray" id="defect-count-badge" style="display:none">0 items</span>
+              </div>
+              <div id="defects-list" class="results-scroll">
+                <div class="empty-notion">
+                  <div class="empty-notion-icon">📷</div>
+                  <div style="font-weight: 500; color: var(--text-secondary); margin-bottom: 4px;">No Defects Logged</div>
+                  <div style="font-size: 13px;">Upload site footage to generate defect masks & structural reports.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ Tab 3: Foresight Engine ═══ -->
+        <div class="tab-panel" id="panel-foresight">
+          <div class="callout-block">
+            <div class="callout-icon">🔮</div>
+            <div class="callout-content">
+              <strong>Continuous Risk Modeling & MILP Re-optimization:</strong> Whenever Layer 1 or Layer 2 flags violations or defects, the Foresight Engine automatically recalculates completion probabilities across 10,000 Monte Carlo paths and triggers resource reallocation to minimize cost variance.
+            </div>
+          </div>
+
+          <div class="layout-3col" style="margin-bottom: 32px;">
+            <div class="metric-card">
+              <div class="metric-label">Probabilistic On-Time Ratio</div>
+              <div class="metric-value" id="f-ontime" style="color: var(--accent-primary);">—</div>
+              <div class="metric-desc">Monte Carlo 10,000x simulation</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">Active Risk Scenarios</div>
+              <div class="metric-value" id="f-scenarios">0</div>
+              <div class="metric-desc">Probabilistic delay triggers</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">MILP Cost Savings</div>
+              <div class="metric-value" id="f-savings" style="color: var(--tag-green-text);">—</div>
+              <div class="metric-desc">Optimal labor/duration shift</div>
+            </div>
+          </div>
+
+          <div class="layout-2col">
+            <div>
+              <div class="section-title">
+                <span>Probabilistic Project Schedule (Gantt)</span>
+                <button class="btn-notion btn-notion-primary" onclick="runForesight()">▶ Run Simulation</button>
+              </div>
+              <div class="notion-box" id="gantt-chart">
+                <div class="empty-notion">
+                  <div class="empty-notion-icon">📊</div>
+                  <div style="font-weight: 500; color: var(--text-secondary); margin-bottom: 4px;">Simulation Idle</div>
+                  <div style="font-size: 13px;">Click "Run Simulation" to model delay risks & duration shifts.</div>
+                </div>
+              </div>
+
+              <div class="section-title">
+                <span>Monte Carlo Risk Distribution</span>
+              </div>
+              <div id="risk-scenarios">
+                <div class="notion-box">
+                  <div class="empty-notion" style="padding: 24px 12px;"><span style="font-size: 13px;">Execute simulation to view scenario likelihoods.</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="section-title">
+                <span>MILP Resource Re-Optimization</span>
+                <button class="btn-notion" onclick="runOptimization()">⚡ Re-Optimize</button>
+              </div>
+              <div class="notion-box" id="optimization-result">
+                <div class="empty-notion" style="padding: 24px 12px;"><span style="font-size: 13px;">Trigger optimization to compute minimum-cost crew allocation.</span></div>
+              </div>
+
+              <div class="section-title">
+                <span>Material Cost Index Forecast</span>
+              </div>
+              <div class="notion-box" id="forecast-chart" style="min-height: 180px; display: flex; align-items: center; justify-content: center;">
+                <div style="text-align: center; color: var(--text-muted); font-size: 13px;">
+                  Time-series projection (Prophet/XGBoost) will chart cement/steel volatility here.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

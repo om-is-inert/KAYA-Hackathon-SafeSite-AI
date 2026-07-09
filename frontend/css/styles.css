@@ -1,0 +1,746 @@
+/* ══════════════════════════════════════════════════════════════
+   SafeSite AI — Notion Design System
+   Pristine Notion UI (Light & Dark Themes), Minimalist Typography,
+   Notion Callout Blocks, Database Tables, and Tag Pills.
+   ══════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ── CSS Variables — Notion Dark Mode (Default) ───────────── */
+:root {
+  --bg-app: #191919;
+  --bg-sidebar: #202020;
+  --bg-topbar: #191919;
+  --bg-card: #202020;
+  --bg-card-hover: #252525;
+  --bg-callout: #252525;
+  --bg-input: #242424;
+  --bg-hover: rgba(255, 255, 255, 0.055);
+  --bg-active: rgba(255, 255, 255, 0.08);
+  
+  --border: #2f2f2f;
+  --border-strong: #3f3f3f;
+  --border-sidebar: #282828;
+  
+  --text-main: #rgba(255, 255, 255, 0.9);
+  --text-main-hex: #e6e6e6;
+  --text-secondary: #9b9b9b;
+  --text-muted: #6b6b6b;
+  
+  /* Notion Tag / Select Badge Colors (Dark) */
+  --tag-red-bg: #4c2423;
+  --tag-red-text: #eb5757;
+  --tag-orange-bg: #463318;
+  --tag-orange-text: #f2994a;
+  --tag-yellow-bg: #443c19;
+  --tag-yellow-text: #f2c94c;
+  --tag-green-bg: #2e3c2f;
+  --tag-green-text: #6fcf97;
+  --tag-blue-bg: #213847;
+  --tag-blue-text: #56ccf2;
+  --tag-purple-bg: #372a45;
+  --tag-purple-text: #bb86fc;
+  --tag-gray-bg: #2e2e2e;
+  --tag-gray-text: #a0a0a0;
+
+  --accent-primary: #3b82f6;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  
+  --transition-fast: all 0.15s ease;
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+/* ── CSS Variables — Notion Light Mode ─────────────────────── */
+[data-theme="light"] {
+  --bg-app: #ffffff;
+  --bg-sidebar: #fbfbfa;
+  --bg-topbar: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f7f6f3;
+  --bg-callout: #f1f1ef;
+  --bg-input: #f7f6f3;
+  --bg-hover: rgba(55, 53, 47, 0.06);
+  --bg-active: rgba(55, 53, 47, 0.09);
+  
+  --border: #e9e9e7;
+  --border-strong: #d3d3cf;
+  --border-sidebar: #ededeb;
+  
+  --text-main: #37352f;
+  --text-main-hex: #37352f;
+  --text-secondary: #787774;
+  --text-muted: #9b9a97;
+  
+  /* Notion Tag / Select Badge Colors (Light) */
+  --tag-red-bg: #ffe2dd;
+  --tag-red-text: #d44c47;
+  --tag-orange-bg: #fadec9;
+  --tag-orange-text: #d9730d;
+  --tag-yellow-bg: #fdecc8;
+  --tag-yellow-text: #cb912f;
+  --tag-green-bg: #dbeddb;
+  --tag-green-text: #448361;
+  --tag-blue-bg: #d3e5ef;
+  --tag-blue-text: #337ea9;
+  --tag-purple-bg: #e8deee;
+  --tag-purple-text: #9065b0;
+  --tag-gray-bg: #e3e2e0;
+  --tag-gray-text: #5a5a5a;
+}
+
+/* ── Reset & Base ──────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 16px; scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg-app);
+  color: var(--text-main-hex);
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.5;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Layout ────────────────────────────────────────────────── */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ── Sidebar (Notion Minimalist) ───────────────────────────── */
+.sidebar {
+  width: 250px;
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border-sidebar);
+  padding: 14px 10px;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 100;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.workspace-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  margin-bottom: 18px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.workspace-header:hover {
+  background: var(--bg-hover);
+}
+
+.workspace-icon {
+  width: 26px; height: 26px;
+  background: var(--tag-blue-bg);
+  color: var(--tag-blue-text);
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+}
+
+.workspace-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main-hex);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.workspace-chevron {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.nav-section {
+  margin-bottom: 20px;
+}
+
+.nav-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 0 8px;
+  margin-bottom: 4px;
+  letter-spacing: 0.3px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  user-select: none;
+}
+
+.nav-item:hover {
+  background: var(--bg-hover);
+  color: var(--text-main-hex);
+}
+
+.nav-item.active {
+  background: var(--bg-active);
+  color: var(--text-main-hex);
+  font-weight: 600;
+}
+
+.nav-icon {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+}
+
+.nav-badge {
+  margin-left: auto;
+  background: var(--tag-red-bg);
+  color: var(--tag-red-text);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 10px;
+}
+
+/* ── Top Bar (Breadcrumb & Action Buttons) ─────────────────── */
+.main-wrapper {
+  flex: 1;
+  margin-left: 250px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.topbar {
+  height: 46px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-topbar);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.breadcrumb-sep { color: var(--text-muted); }
+.breadcrumb-current { color: var(--text-main-hex); font-weight: 500; }
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.theme-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.theme-toggle-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-main-hex);
+}
+
+/* ── Main Page Content ─────────────────────────────────────── */
+.main-content {
+  flex: 1;
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 40px 48px 80px;
+}
+
+/* ── Notion Page Header ────────────────────────────────────── */
+.page-header {
+  margin-bottom: 32px;
+}
+
+.page-icon-lg {
+  font-size: 64px;
+  line-height: 1;
+  margin-bottom: 16px;
+  user-select: none;
+}
+
+.page-title {
+  font-size: 38px;
+  font-weight: 700;
+  color: var(--text-main-hex);
+  letter-spacing: -0.02em;
+  margin-bottom: 16px;
+  line-height: 1.2;
+}
+
+/* ── Notion Page Properties Table ──────────────────────────── */
+.properties-table {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.property-row {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+}
+
+.property-label {
+  width: 160px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.property-value {
+  flex: 1;
+  color: var(--text-main-hex);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── Notion Callout Block ──────────────────────────────────── */
+.callout-block {
+  display: flex;
+  gap: 12px;
+  padding: 16px 18px;
+  background: var(--bg-callout);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  margin-bottom: 28px;
+  font-size: 14px;
+  color: var(--text-main-hex);
+  line-height: 1.6;
+}
+
+.callout-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.callout-content {
+  flex: 1;
+}
+
+/* ── Notion Status Pills / Tags ────────────────────────────── */
+.tag-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.tag-red { background: var(--tag-red-bg); color: var(--tag-red-text); }
+.tag-orange { background: var(--tag-orange-bg); color: var(--tag-orange-text); }
+.tag-yellow { background: var(--tag-yellow-bg); color: var(--tag-yellow-text); }
+.tag-green { background: var(--tag-green-bg); color: var(--tag-green-text); }
+.tag-blue { background: var(--tag-blue-bg); color: var(--tag-blue-text); }
+.tag-purple { background: var(--tag-purple-bg); color: var(--tag-purple-text); }
+.tag-gray { background: var(--tag-gray-bg); color: var(--tag-gray-text); }
+
+/* ── Health / Metric Blocks (Notion Database Card Style) ───── */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.metric-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  transition: var(--transition-fast);
+}
+
+.metric-card:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-card-hover);
+}
+
+.metric-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.metric-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.metric-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-main-hex);
+}
+
+.metric-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+/* ── Section Header (Notion H2/H3) ─────────────────────────── */
+.section-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-main-hex);
+  margin: 32px 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.section-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ── Notion Block Containers & Upload Box ──────────────────── */
+.notion-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.upload-box {
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--bg-input);
+  padding: 36px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  position: relative;
+}
+
+.upload-box:hover, .upload-box.dragover {
+  border-color: var(--accent-primary);
+  background: var(--bg-hover);
+}
+
+.upload-box input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.upload-icon-sm {
+  font-size: 32px;
+  margin-bottom: 12px;
+}
+
+.upload-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main-hex);
+  margin-bottom: 4px;
+}
+
+.upload-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ── Notion Checkbox / Chip ────────────────────────────────── */
+.checkbox-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.notion-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  user-select: none;
+}
+
+.notion-checkbox:hover {
+  border-color: var(--border-strong);
+  color: var(--text-main-hex);
+}
+
+.notion-checkbox.checked {
+  background: var(--bg-active);
+  border-color: var(--border-strong);
+  color: var(--text-main-hex);
+  font-weight: 500;
+}
+
+.notion-checkbox input { display: none; }
+
+/* ── Notion Table (Violations & Defects List) ──────────────── */
+.notion-table-wrapper {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.notion-table-header {
+  display: grid;
+  grid-template-columns: 140px 1fr 180px 40px;
+  background: var(--bg-input);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.notion-table-row {
+  display: grid;
+  grid-template-columns: 140px 1fr 180px 40px;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  transition: var(--transition-fast);
+}
+
+.notion-table-row:last-child {
+  border-bottom: none;
+}
+
+.notion-table-row:hover {
+  background: var(--bg-hover);
+}
+
+/* ── Notion Toggle / Expansion Item ────────────────────────── */
+.notion-toggle-item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  margin-bottom: 8px;
+  overflow: hidden;
+  transition: var(--transition-fast);
+}
+
+.notion-toggle-item:hover {
+  border-color: var(--border-strong);
+}
+
+.notion-toggle-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  background: var(--bg-card);
+  user-select: none;
+}
+
+.notion-toggle-header:hover {
+  background: var(--bg-card-hover);
+}
+
+.notion-toggle-body {
+  padding: 14px 16px 16px 44px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-input);
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* ── Buttons (Notion Minimalist) ───────────────────────────── */
+.btn-notion {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-main-hex);
+  outline: none;
+}
+
+.btn-notion:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
+}
+
+.btn-notion-primary {
+  background: var(--text-main-hex);
+  color: var(--bg-app);
+  border-color: transparent;
+  font-weight: 600;
+}
+
+.btn-notion-primary:hover {
+  opacity: 0.9;
+}
+
+/* ── Two/Three Column Layouts ──────────────────────────────── */
+.layout-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.layout-3col {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+/* ── Scanning Overlay (Clean Notion Style) ─────────────────── */
+.scanning-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(25, 25, 25, 0.85);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  border-radius: var(--radius-md);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+.scanning-overlay.active { opacity: 1; pointer-events: all; }
+
+.notion-spinner {
+  width: 28px; height: 28px;
+  border: 3px solid var(--border-strong);
+  border-top-color: var(--accent-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 14px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Gantt Bar (Notion Style) ──────────────────────────────── */
+.gantt-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.gantt-label {
+  width: 140px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.gantt-track {
+  flex: 1;
+  height: 24px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.gantt-bar {
+  position: absolute;
+  height: 100%;
+  border-radius: var(--radius-sm);
+  transition: var(--transition-fast);
+}
+
+/* ── Empty State ───────────────────────────────────────────── */
+.empty-notion {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--text-muted);
+}
+
+.empty-notion-icon {
+  font-size: 36px;
+  margin-bottom: 12px;
+  opacity: 0.6;
+}
+
+/* ── Tab Panels ────────────────────────────────────────────── */
+.tab-panel { display: none; }
+.tab-panel.active { display: block; animation: fadeIn 0.25s ease; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── Responsive ────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .sidebar { display: none; }
+  .main-wrapper { margin-left: 0; }
+  .main-content { padding: 24px 20px 60px; }
+  .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+  .layout-2col, .layout-3col { grid-template-columns: 1fr; }
+  .notion-table-header, .notion-table-row { grid-template-columns: 100px 1fr 40px; }
+  .notion-table-header div:nth-child(3), .notion-table-row div:nth-child(3) { display: none; }
+}
