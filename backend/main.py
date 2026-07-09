@@ -14,8 +14,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from backend import config
-from backend.models import ComplianceResult, DefectReport, ForesightReport, ProjectHealth
+from backend.models import (
+    ComplianceResult, DefectReport, ForesightReport, ProjectHealth,
+    PPEReport, BD3ClassificationReport, ScanToBIMReport,
+)
 from backend.feedback_loop import feedback_loop
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(name)s | %(levelname)s | %(message)s")
@@ -148,6 +150,58 @@ async def analyze_defects(image: UploadFile = File(...)):
     feedback_loop.update_defects(report)
 
     return report
+
+
+@app.post("/api/v1/vision/ppe/analyze")
+async def analyze_ppe(image: UploadFile = File(...), use_yolo: bool = Form(False)):
+    """Upload a site photo for SH17-guided PPE & worker safety audit."""
+    content = await image.read()
+    save_path = config.UPLOAD_DIR / f"{uuid.uuid4().hex}_{image.filename}"
+    save_path.write_bytes(content)
+
+    from backend.layer2_vision.ppe_detector import detect_ppe
+    report_dict = await detect_ppe(image_path=save_path, use_yolo=use_yolo)
+
+    # Feed into feedback loop
+    feedback_loop.update_ppe(report_dict)
+
+    return report_dict
+
+
+@app.post("/api/v1/vision/bd3/analyze")
+async def analyze_bd3_defects(image: UploadFile = File(...), use_vit: bool = Form(False)):
+    """Upload a surface photo for BD3 building defect classification."""
+    content = await image.read()
+    save_path = config.UPLOAD_DIR / f"{uuid.uuid4().hex}_{image.filename}"
+    save_path.write_bytes(content)
+
+    from backend.layer2_vision.defect_classifier import classify_building_defects
+    report_dict = await classify_building_defects(image_path=save_path, use_vit=use_vit)
+
+    # Feed into feedback loop
+    feedback_loop.update_bd3(report_dict)
+
+    return report_dict
+
+
+@app.post("/api/v1/vision/scan2bim/compare")
+async def compare_scan_to_bim(as_built_elements: str = Form(...), as_designed_elements: str = Form(...)):
+    """Run Scan-to-BIM dimensional comparison between as-built scan and Layer 1 blueprint."""
+    import json
+    try:
+        built_list = json.loads(as_built_elements)
+        designed_list = json.loads(as_designed_elements)
+    except Exception as e:
+        raise HTTPException(400, f"Invalid JSON element lists: {e}")
+
+    from backend.layer2_vision.scan_to_bim import scan_to_bim
+    scan_to_bim.compare_with_blueprint(built_list, designed_list)
+    summary = scan_to_bim.generate_comparison_summary()
+
+    # Feed into feedback loop
+    feedback_loop.update_scan2bim(summary)
+
+    return summary
 
 
 # ── Layer 3 — Foresight Engine ──────────────────────────────────────

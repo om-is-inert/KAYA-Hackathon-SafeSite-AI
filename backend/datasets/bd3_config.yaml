@@ -1,0 +1,73 @@
+# ══════════════════════════════════════════════════════════════════
+# BD3 Dataset Configuration for Building Defect Classification
+# Source: https://github.com/Praveenkottari/BD3-Dataset
+# Paper: ACM BuildSys '24 (DOI: 10.1145/3671127.3698789)
+# License: Research use
+# ══════════════════════════════════════════════════════════════════
+
+dataset_name: BD3
+description: "Building Defects Detection Dataset — 3,965 annotated RGB images"
+source_url: "https://github.com/Praveenkottari/BD3-Dataset"
+
+# 7 classes (6 defect types + normal)
+classes:
+  0: algae
+  1: major_crack
+  2: minor_crack
+  3: peeling
+  4: spalling
+  5: stain
+  6: normal
+
+# Number of images
+original_count: 3965
+augmented_count: 14000
+
+# Image collection metadata
+building_age_range: "10-60 years"
+capture_distance: "~1 meter"
+surfaces: ["concrete", "stone"]
+environments: ["indoor", "outdoor"]
+
+# Train/val/test split (as used in the paper)
+split_ratio:
+  train: 0.60
+  val: 0.20
+  test: 0.20
+
+# Benchmark models from the paper
+benchmark_models:
+  - name: ViT-patch16
+    f1_original: 0.9342
+    f1_augmented: 0.9879
+  - name: VGG16
+    f1_original: 0.8901
+    f1_augmented: 0.9654
+  - name: ResNet18
+    f1_original: 0.8756
+    f1_augmented: 0.9512
+  - name: MobileNetV2
+    f1_original: 0.8623
+    f1_augmented: 0.9489
+  - name: AlexNet
+    f1_original: 0.8102
+    f1_augmented: 0.9234
+
+# SafeSite AI severity mapping
+severity_mapping:
+  major_crack: CRITICAL
+  spalling: HIGH
+  minor_crack: MEDIUM
+  peeling: MEDIUM
+  algae: LOW
+  stain: LOW
+  normal: PASS
+
+# IS 456:2000 code references per defect type
+code_references:
+  major_crack: "IS 456 §35.3.2 — Crack width exceeds permissible limit (0.3mm for moderate exposure)"
+  minor_crack: "IS 456 §35.3.2 — Surface crack detected, monitor for propagation"
+  spalling: "IS 456 §35.4 — Concrete cover delamination, rebar exposure risk"
+  peeling: "IS 456 §14.1 — Surface finish deterioration, re-apply protective coating"
+  algae: "NBC 2016 §7.4 — Biological growth indicating persistent moisture ingress"
+  stain: "NBC 2016 §7.3 — Efflorescence/staining from water seepage"

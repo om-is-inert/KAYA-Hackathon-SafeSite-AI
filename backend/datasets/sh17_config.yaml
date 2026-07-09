@@ -1,0 +1,46 @@
+# ══════════════════════════════════════════════════════════════════
+# SH17 Dataset Configuration for PPE Detection
+# Source: https://github.com/ahmadmughees/SH17dataset
+# Paper: Journal of Safety Science and Resilience (2024)
+# License: CC BY-NC-SA 4.0
+# ══════════════════════════════════════════════════════════════════
+
+path: ./data/sh17  # dataset root dir
+train: train_files.txt
+val: val_files.txt
+test:
+
+# 17 PPE and body-part classes
+names:
+  0:  person
+  1:  ear
+  2:  ear-mufs
+  3:  face
+  4:  face-guard
+  5:  face-mask
+  6:  foot
+  7:  tool
+  8:  glasses
+  9:  gloves
+  10: helmet
+  11: hands
+  12: head
+  13: medical-suit
+  14: shoes
+  15: safety-suit
+  16: safety-vest
+
+# SafeSite AI PPE compliance mapping
+# These classes are checked against NBC 2016 Part IV safety requirements
+safety_critical_classes:
+  - helmet        # Hard hat — mandatory on all active construction sites
+  - safety-vest   # High-visibility vest — required for all ground workers
+  - gloves        # Hand protection — required when handling rebar/formwork
+  - shoes         # Safety footwear — steel-toe required on active sites
+  - glasses       # Eye protection — required for welding/cutting zones
+  - face-guard    # Face shield — required for grinding/welding operations
+  - ear-mufs      # Hearing protection — required in high-noise zones (>85dB)
+
+# Detection thresholds
+confidence_threshold: 0.35
+iou_threshold: 0.45
