@@ -246,3 +246,53 @@ class KnowledgeBase:
     def doc_count(self) -> int:
         self._ensure_init()
         return self._collection.count()
+
+
+# ── Standalone Module-level Functions (For Test Scripts & Teammate Integration) ──
+
+_default_kb = KnowledgeBase()
+
+
+def ingest_pdf(pdf_path: str | Path, source_doc: str = "") -> int:
+    """Chunk a code PDF and add it to ChromaDB. Run this once at setup time per PDF."""
+    return _default_kb.ingest_pdf(pdf_path)
+
+
+def retrieve_relevant_codes(query: str, top_k: int = 5) -> str:
+    """
+    Query the knowledge base and return a formatted string of the top-k
+    relevant code excerpts, each tagged with its source + section for citation.
+    """
+    results = _default_kb.query(query_text=query, n_results=top_k)
+    if not results:
+        return "No relevant code excerpts found."
+
+    formatted = []
+    for r in results:
+        formatted.append(
+            f"[Source: {r['source']}, Section: {r['section']}, Page: {r['page']}]\n{r['text']}"
+        )
+    return "\n\n---\n\n".join(formatted)
+
+
+def build_query_from_spatial_data(spatial_data: dict) -> str:
+    """
+    Turn extracted measurements into a retrieval query so RAG pulls the
+    most relevant clauses (hallway widths, exits, staircases, etc.)
+    rather than a generic search.
+    """
+    terms = []
+    if spatial_data.get("hallways"):
+        terms.append("minimum corridor and hallway width fire escape requirements")
+    if spatial_data.get("staircases"):
+        terms.append("minimum staircase width and riser height requirements")
+    if spatial_data.get("exits"):
+        terms.append("minimum number of exits and maximum exit travel distance")
+    if spatial_data.get("doors"):
+        terms.append("exit door swing direction requirements")
+    if spatial_data.get("structural_elements"):
+        terms.append("minimum wall and column thickness structural requirements")
+    if not terms:
+        terms.append("general fire and life safety requirements")
+    return "; ".join(terms)
+

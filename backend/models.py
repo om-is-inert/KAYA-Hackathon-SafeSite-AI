@@ -94,6 +94,85 @@ class DefectReport(BaseModel):
     estimated_repair_time: Optional[str] = None
 
 
+class PPEWorkerAssessment(BaseModel):
+    """Assessment of a single worker for PPE compliance (SH17)."""
+    worker_id: str = "W1"
+    location: str = ""
+    ppe_present: list[str] = Field(default_factory=list)
+    ppe_missing: list[str] = Field(default_factory=list)
+    compliance_status: str = "PARTIAL"
+    confidence: float = 0.0
+    bounding_box: Optional[dict] = None
+    violations: list[dict] = Field(default_factory=list)
+
+
+class PPEReport(BaseModel):
+    """Full PPE and worker safety audit report (SH17 dataset)."""
+    image_filename: str = ""
+    total_workers: int = 0
+    site_safety_score: float = 100.0
+    workers: list[PPEWorkerAssessment] = Field(default_factory=list)
+    site_level_violations: list[dict] = Field(default_factory=list)
+    detection_model: str = "gemini-vlm-sh17-guided"
+    sh17_classes_used: list[str] = Field(default_factory=list)
+    dataset_source: str = "SH17 (8,099 images, 75,994 annotations, 17 classes)"
+
+
+class BD3DefectFinding(BaseModel):
+    """Single defect finding from BD3 taxonomy."""
+    defect_class: str = "normal"
+    severity: Severity = Severity.PASS
+    confidence: float = 0.0
+    location: str = ""
+    description: str = ""
+    code_reference: str = ""
+    remediation: str = ""
+    affected_area_percent: Optional[float] = None
+
+
+class BD3ClassificationReport(BaseModel):
+    """Full building defect classification report (BD3 dataset)."""
+    image_filename: str = ""
+    primary_classification: str = "normal"
+    confidence: float = 0.0
+    all_defects_found: list[BD3DefectFinding] = Field(default_factory=list)
+    surface_condition_score: float = 100.0
+    requires_immediate_action: bool = False
+    primary_code_reference: str = ""
+    primary_remediation: str = ""
+    primary_severity: Severity = Severity.PASS
+    detection_model: str = "gemini-vlm-bd3-guided"
+    bd3_classes: list[str] = Field(default_factory=list)
+    dataset_source: str = "BD3 (3,965 images, 7 classes, ACM BuildSys '24)"
+
+
+class ScanToBIMDeviation(BaseModel):
+    """Single dimensional deviation from Scan-to-BIM comparison."""
+    element_id: str
+    element_type: str
+    measurement_type: str
+    designed_value_mm: float
+    measured_value_mm: float
+    deviation_mm: float
+    tolerance_mm: float
+    is_within_tolerance: bool
+    code_reference: str
+    severity: Severity
+    recommendation: str
+
+
+class ScanToBIMReport(BaseModel):
+    """Full as-built vs as-designed comparison report (Scan-to-BIM / HePIC)."""
+    status: str = "no_deviations"
+    deviations_found: int = 0
+    critical: int = 0
+    high: int = 0
+    medium: int = 0
+    deviations: list[ScanToBIMDeviation] = Field(default_factory=list)
+    dataset_source: str = "Scan-to-BIM / BIM-Net++ (HePIC, IEEE ICIP 2023)"
+    tolerance_standard: str = "IS 456:2000 §11 / NBC 2016"
+
+
 # ── Layer 3 — Foresight Engine Schemas ──────────────────────────────
 
 class RiskScenario(BaseModel):

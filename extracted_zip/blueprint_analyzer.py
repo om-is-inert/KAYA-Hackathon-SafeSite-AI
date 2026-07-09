@@ -1,28 +1,20 @@
 """
-SafeSite AI — Layer 1 — Blueprint Analyzer
-Uses Gemini VLM to extract spatial data from architectural blueprints and cross-reference compliance.
+Layer 1 - Blueprint spatial extraction + compliance cross-referencing via Gemini 2.5 Flash.
+
+Two-step VLM strategy:
+  1) extract_spatial_data(image_path)        -> structured measurements JSON
+  2) check_compliance(spatial_data, rag_text) -> violations JSON
 """
-
-from __future__ import annotations
-
-import base64
 import json
-import logging
 import re
-from pathlib import Path
-from typing import Any
-
 import google.generativeai as genai
 from PIL import Image
 
 from backend import config
-from backend.config import GEMINI_API_KEY, VLM_MODEL
 
-logger = logging.getLogger(__name__)
+genai.configure(api_key=config.GEMINI_API_KEY)
 
-# Configure Gemini
-genai.configure(api_key=GEMINI_API_KEY)
-_model = genai.GenerativeModel(VLM_MODEL)
+_model = genai.GenerativeModel(config.GEMINI_MODEL_NAME)
 
 
 EXTRACTION_PROMPT = """You are a structural/architectural analyst extracting precise spatial data from a blueprint or floor plan image.
@@ -99,82 +91,24 @@ Return ONLY valid JSON, no markdown, no commentary, in this exact structure:
 """
 
 
-def _extract_json(raw_text: str) -> dict[str, Any]:
-    """Strip markdown code fences if present and decode JSON."""
+def _extract_json(raw_text: str) -> dict:
+    """Gemini sometimes wraps JSON in ```json fences despite instructions. Strip them."""
     cleaned = raw_text.strip()
     cleaned = re.sub(r"^```json\s*|^```\s*|```$", "", cleaned, flags=re.MULTILINE).strip()
     try:
         return json.loads(cleaned)
     except json.JSONDecodeError as e:
-        logger.warning("VLM returned non-JSON; attempting regex match...")
-        json_match = re.search(r"\{.*\}", cleaned, re.DOTALL)
-        if json_match:
-            try:
-                return json.loads(json_match.group())
-            except json.JSONDecodeError:
-                pass
         raise ValueError(f"Gemini did not return valid JSON. Raw response:\n{raw_text}") from e
 
 
-def extract_spatial_data(
-    image_path: str | Path | None = None,
-    image_bytes: bytes | None = None,
-    mime_type: str = "image/png",
-) -> dict[str, Any]:
-    """
-    Step 1: send the blueprint image to Gemini and get structured measurements back.
-    Works synchronously for standalone scripts and API calls.
-    """
-    if image_path is not None:
-        image_path = Path(image_path)
-        img = Image.open(image_path)
-        logger.info("Sending blueprint %s to %s for spatial extraction...", image_path.name, VLM_MODEL)
-        response = _model.generate_content([EXTRACTION_PROMPT, img])
-    elif image_bytes is not None:
-        image_part = {
-            "inline_data": {
-                "mime_type": mime_type,
-                "data": base64.b64encode(image_bytes).decode("utf-8"),
-            }
-        }
-        logger.info("Sending blueprint bytes to %s for spatial extraction...", VLM_MODEL)
-        response = _model.generate_content([EXTRACTION_PROMPT, image_part])
-    else:
-        raise ValueError("Either image_path or image_bytes must be provided")
-
-    spatial_data = _extract_json(response.text)
-    logger.info("Spatial extraction complete: %d keys", len(spatial_data))
-    return spatial_data
+def extract_spatial_data(image_path: str) -> dict:
+    """Step 1: send the blueprint image to Gemini and get structured measurements back."""
+    img = Image.open(image_path)
+    response = _model.generate_content([EXTRACTION_PROMPT, img])
+    return _extract_json(response.text)
 
 
-async def extract_spatial_data_async(
-    image_path: str | Path | None = None,
-    image_bytes: bytes | None = None,
-    mime_type: str = "image/png",
-) -> dict[str, Any]:
-    """Async wrapper around extract_spatial_data for asyncio callers."""
-    import asyncio
-    return await asyncio.to_thread(
-        extract_spatial_data, image_path=image_path, image_bytes=image_bytes, mime_type=mime_type
-    )
-
-
-def extract_from_pdf_blueprint(pdf_path: str | Path) -> dict[str, Any]:
-    """Extract spatial data from a PDF blueprint by rendering the first page to image."""
-    import fitz
-
-    pdf_path = Path(pdf_path)
-    doc = fitz.open(str(pdf_path))
-    page = doc[0]
-    mat = fitz.Matrix(3.0, 3.0)
-    pix = page.get_pixmap(matrix=mat)
-    image_bytes = pix.tobytes("png")
-    doc.close()
-
-    return extract_spatial_data(image_bytes=image_bytes, mime_type="image/png")
-
-
-def check_compliance(spatial_data: dict[str, Any], rag_results: str) -> dict[str, Any]:
+def check_compliance(spatial_data: dict, rag_results: str) -> dict:
     """Step 2: cross-reference extracted measurements against retrieved code excerpts."""
     prompt = COMPLIANCE_PROMPT_TEMPLATE.format(
         spatial_data=json.dumps(spatial_data, indent=2),
@@ -186,7 +120,7 @@ def check_compliance(spatial_data: dict[str, Any], rag_results: str) -> dict[str
     # Attach rule-based rework estimates per violation (more defensible than
     # trusting an LLM-hallucinated cost/hours number) - this is what feeds Layer 3.
     for v in result.get("violations", []):
-        severity = str(v.get("severity", "LOW")).upper()
+        severity = v.get("severity", "LOW").upper()
         estimate = config.SEVERITY_REWORK_ESTIMATES.get(severity, config.SEVERITY_REWORK_ESTIMATES["LOW"])
         v["estimated_rework_hours"] = estimate["hours"]
         v["estimated_rework_cost"] = estimate["cost"]
@@ -194,7 +128,7 @@ def check_compliance(spatial_data: dict[str, Any], rag_results: str) -> dict[str
     return result
 
 
-def analyze_blueprint(image_path: str | Path, rag_results: str) -> dict[str, Any]:
+def analyze_blueprint(image_path: str, rag_results: str) -> dict:
     """Full pipeline: extraction -> compliance check. Returns both for transparency/debugging."""
     spatial_data = extract_spatial_data(image_path)
     compliance_result = check_compliance(spatial_data, rag_results)
