@@ -14,6 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
+from backend import config
 from backend.models import (
     ComplianceResult, DefectReport, ForesightReport, ProjectHealth,
     PPEReport, BD3ClassificationReport, ScanToBIMReport,
