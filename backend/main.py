@@ -30,6 +30,12 @@ app = FastAPI(
     version="1.0.0",
 )
 
+# Shared in-memory state for Layer 3 polling
+SHARED_STATE = {
+    "violations": [],
+    "defects": [],
+}
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -75,9 +81,9 @@ async def analyze_compliance(
         extract_spatial_data, extract_from_pdf_blueprint,
     )
     if suffix == ".pdf":
-        spatial_data = await extract_from_pdf_blueprint(save_path)
+        spatial_data = extract_from_pdf_blueprint(save_path)
     else:
-        spatial_data = await extract_spatial_data(image_path=save_path)
+        spatial_data = extract_spatial_data(image_path=save_path)
 
     # Step 2: RAG retrieval
     kb = get_knowledge_base()
@@ -99,7 +105,8 @@ async def analyze_compliance(
     result = await check_compliance(spatial_data, rag_results, codes_list)
     result.blueprint_filename = filename
 
-    # Feed into feedback loop
+    # Feed into shared state + feedback loop
+    SHARED_STATE["violations"] = [v.dict() if hasattr(v, "dict") else v for v in result.violations]
     feedback_loop.update_compliance(result)
 
     return result
@@ -262,6 +269,12 @@ async def foresight_dashboard():
 
 
 # ── Cross-Layer ─────────────────────────────────────────────────────
+
+@app.get("/api/v1/project/shared-state")
+async def get_shared_state():
+    """Layer 3 (or the frontend) polls this to see current violations + defects."""
+    return SHARED_STATE
+
 
 @app.get("/api/v1/project/health", response_model=ProjectHealth)
 async def project_health():
