@@ -17,6 +17,16 @@ export default function ComplianceEngine() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
+  const [selectedCodes, setSelectedCodes] = useState([
+    'NBC 2016 Part IV',
+    'IS 456:2000',
+  ]);
+
+  const toggleCode = (code) => {
+    setSelectedCodes(prev =>
+      prev.includes(code) ? prev.filter(c => c !== code) : [...prev, code]
+    );
+  };
   const containerRef = useRef();
   const heroRef = useRef();
   const videoRef = useRef();
@@ -42,7 +52,7 @@ export default function ComplianceEngine() {
     try {
       const formData = new FormData();
       formData.append('blueprint', file);
-      formData.append('codes', 'NBC 2016 Part IV,IS 456:2000');
+      formData.append('codes', selectedCodes.join(','));
 
       const response = await fetch(`${API_BASE}/api/v1/compliance/analyze`, {
         method: 'POST',
@@ -57,7 +67,9 @@ export default function ComplianceEngine() {
       const data = await response.json();
       setResult(data);
     } catch (err) {
-      setError(err.message || 'Failed to analyze blueprint. Is the backend running?');
+      setError(err.message === 'Failed to fetch'
+        ? 'Cannot reach backend. Start the server with: uvicorn backend.main:app --reload'
+        : err.message || 'Failed to analyze blueprint.');
     } finally {
       setIsLoading(false);
     }
@@ -181,8 +193,18 @@ export default function ComplianceEngine() {
           <div className="ce-workspace-left">
             <h2 className="ce-section-title">1. Select Building Codes</h2>
             <div className="ce-code-toggles">
-              <button className="ce-code-btn ce-code-btn-active">NBC 2016 Part IV (Fire & Life Safety)</button>
-              <button className="ce-code-btn ce-code-btn-active">IS 456:2000 (Reinforced Concrete)</button>
+              <button
+                className={`ce-code-btn ${selectedCodes.includes('NBC 2016 Part IV') ? 'ce-code-btn-active' : ''}`}
+                onClick={() => toggleCode('NBC 2016 Part IV')}
+              >
+                NBC 2016 Part IV (Fire & Life Safety)
+              </button>
+              <button
+                className={`ce-code-btn ${selectedCodes.includes('IS 456:2000') ? 'ce-code-btn-active' : ''}`}
+                onClick={() => toggleCode('IS 456:2000')}
+              >
+                IS 456:2000 (Reinforced Concrete)
+              </button>
             </div>
           </div>
 

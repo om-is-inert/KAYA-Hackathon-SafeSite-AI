@@ -18,7 +18,7 @@ load_dotenv(_project_root / ".env")
 GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
 
 # ── Model Configuration ────────────────────────────────────────────
-VLM_MODEL: str = os.getenv("VLM_MODEL", "gemini-2.5-flash")
+VLM_MODEL: str = os.getenv("VLM_MODEL", "gemini-3.5-flash")
 GEMINI_MODEL_NAME: str = VLM_MODEL
 EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", "BAAI/bge-large-en-v1.5")
 

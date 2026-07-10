@@ -7,6 +7,12 @@ export default defineConfig({
   server: {
     watch: {
       ignored: ['**/Assets/**', '**/*.mp4', '**/*.jpg', '**/*.png']
+    },
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      }
     }
   }
 })

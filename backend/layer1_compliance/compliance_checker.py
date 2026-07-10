@@ -60,13 +60,24 @@ async def check_compliance(
         rag_context=rag_context,
     )
 
+    import asyncio
+    from google.api_core.exceptions import ResourceExhausted
+
     model = genai.GenerativeModel(VLM_MODEL)
     logger.info("Running compliance check with %d RAG results...", len(rag_results))
 
-    response = await model.generate_content_async(
-        prompt,
-        generation_config=genai.GenerationConfig(temperature=0.2, max_output_tokens=8192, response_mime_type="application/json"),
-    )
+    for attempt in range(3):
+        try:
+            response = await model.generate_content_async(
+                prompt,
+                generation_config=genai.GenerationConfig(temperature=0.2, max_output_tokens=8192, response_mime_type="application/json"),
+            )
+            break
+        except ResourceExhausted:
+            if attempt == 2:
+                raise
+            logger.warning(f"Gemini API rate limit hit. Waiting 35 seconds before retry (Attempt {attempt + 1}/3)...")
+            await asyncio.sleep(35)
 
     raw_text = response.text.strip()
     if raw_text.startswith("```"):

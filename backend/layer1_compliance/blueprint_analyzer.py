@@ -125,28 +125,39 @@ def extract_spatial_data(
     Step 1: send the blueprint image to Gemini and get structured measurements back.
     Works synchronously for standalone scripts and API calls.
     """
-    if image_path is not None:
-        image_path = Path(image_path)
-        img = Image.open(image_path)
-        logger.info("Sending blueprint %s to %s for spatial extraction...", image_path.name, VLM_MODEL)
-        response = _model.generate_content(
-            [EXTRACTION_PROMPT, img],
-            generation_config=genai.GenerationConfig(response_mime_type="application/json"),
-        )
-    elif image_bytes is not None:
-        image_part = {
-            "inline_data": {
-                "mime_type": mime_type,
-                "data": base64.b64encode(image_bytes).decode("utf-8"),
-            }
-        }
-        logger.info("Sending blueprint bytes to %s for spatial extraction...", VLM_MODEL)
-        response = _model.generate_content(
-            [EXTRACTION_PROMPT, image_part],
-            generation_config=genai.GenerationConfig(response_mime_type="application/json"),
-        )
-    else:
-        raise ValueError("Either image_path or image_bytes must be provided")
+    import time
+    from google.api_core.exceptions import ResourceExhausted
+
+    for attempt in range(3):
+        try:
+            if image_path is not None:
+                image_path = Path(image_path)
+                img = Image.open(image_path)
+                logger.info("Sending blueprint %s to %s for spatial extraction...", image_path.name, VLM_MODEL)
+                response = _model.generate_content(
+                    [EXTRACTION_PROMPT, img],
+                    generation_config=genai.GenerationConfig(response_mime_type="application/json"),
+                )
+            elif image_bytes is not None:
+                image_part = {
+                    "inline_data": {
+                        "mime_type": mime_type,
+                        "data": base64.b64encode(image_bytes).decode("utf-8"),
+                    }
+                }
+                logger.info("Sending blueprint bytes to %s for spatial extraction...", VLM_MODEL)
+                response = _model.generate_content(
+                    [EXTRACTION_PROMPT, image_part],
+                    generation_config=genai.GenerationConfig(response_mime_type="application/json"),
+                )
+            else:
+                raise ValueError("Either image_path or image_bytes must be provided")
+            break
+        except ResourceExhausted:
+            if attempt == 2:
+                raise
+            logger.warning(f"Gemini API rate limit hit. Waiting 35 seconds before retry (Attempt {attempt + 1}/3)...")
+            time.sleep(35)
 
     spatial_data = _extract_json(response.text)
     logger.info("Spatial extraction complete: %d keys", len(spatial_data))
