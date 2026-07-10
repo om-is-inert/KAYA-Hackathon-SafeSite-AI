@@ -129,7 +129,10 @@ def extract_spatial_data(
         image_path = Path(image_path)
         img = Image.open(image_path)
         logger.info("Sending blueprint %s to %s for spatial extraction...", image_path.name, VLM_MODEL)
-        response = _model.generate_content([EXTRACTION_PROMPT, img])
+        response = _model.generate_content(
+            [EXTRACTION_PROMPT, img],
+            generation_config=genai.GenerationConfig(response_mime_type="application/json"),
+        )
     elif image_bytes is not None:
         image_part = {
             "inline_data": {
@@ -138,7 +141,10 @@ def extract_spatial_data(
             }
         }
         logger.info("Sending blueprint bytes to %s for spatial extraction...", VLM_MODEL)
-        response = _model.generate_content([EXTRACTION_PROMPT, image_part])
+        response = _model.generate_content(
+            [EXTRACTION_PROMPT, image_part],
+            generation_config=genai.GenerationConfig(response_mime_type="application/json"),
+        )
     else:
         raise ValueError("Either image_path or image_bytes must be provided")
 
@@ -180,7 +186,10 @@ def check_compliance(spatial_data: dict[str, Any], rag_results: str) -> dict[str
         spatial_data=json.dumps(spatial_data, indent=2),
         rag_results=rag_results,
     )
-    response = _model.generate_content(prompt)
+    response = _model.generate_content(
+        prompt,
+        generation_config=genai.GenerationConfig(response_mime_type="application/json"),
+    )
     result = _extract_json(response.text)
 
     # Attach rule-based rework estimates per violation (more defensible than

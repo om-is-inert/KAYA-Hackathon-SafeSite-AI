@@ -47,7 +47,12 @@ app.add_middleware(
 # Serve frontend
 frontend_dir = Path(__file__).resolve().parent.parent / "frontend"
 if frontend_dir.exists():
-    app.mount("/static", StaticFiles(directory=str(frontend_dir)), name="static")
+    app.mount("/static", StaticFiles(directory=str(frontend_dir), html=True), name="static")
+
+    @app.get("/")
+    async def serve_root():
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url="/static/index.html")
 
 # ── Knowledge Base (lazy init) ──────────────────────────────────────
 _kb = None
@@ -236,7 +241,7 @@ async def run_risk_simulation(
 @app.post("/api/v1/foresight/optimize")
 async def run_optimization():
     """Run MILP resource optimization."""
-    from backend.layer3_foresight.optimizer import optimize_resources
+    from backend.layer3_foresight.cost_optimizer import optimize_resources
     rework = []
     if feedback_loop.defect_report:
         from backend.models import Severity

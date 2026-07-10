@@ -137,7 +137,8 @@ class KnowledgeBase:
             model_name="BAAI/bge-large-en-v1.5",
         )
 
-        self._client = chromadb.Client()  # In-memory for hackathon speed
+        Path(self.persist_dir).mkdir(parents=True, exist_ok=True)
+        self._client = chromadb.PersistentClient(path=str(self.persist_dir))
         self._collection = self._client.get_or_create_collection(
             name=self.collection_name,
             embedding_function=self._embedding_fn,

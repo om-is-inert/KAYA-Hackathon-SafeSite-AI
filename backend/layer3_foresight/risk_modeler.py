@@ -51,9 +51,9 @@ def run_monte_carlo(
 
     # Total simulated duration
     total_delays = (
-        rework_days_per_violation * violation_count
-        + rework_days_per_defect * defect_count
-        + rework_days_per_critical * critical_defects
+        rework_days_per_violation * np.sqrt(max(violation_count, 0))
+        + rework_days_per_defect * np.sqrt(max(defect_count, 0))
+        + rework_days_per_critical * np.sqrt(max(critical_defects, 0))
         + weather_delay + supply_delay + labor_delay
     )
     simulated_durations = base_duration_days + total_delays
@@ -63,12 +63,12 @@ def run_monte_carlo(
     simulated_costs = base_cost * cost_multiplier
 
     # Compute probability bands
-    on_time = np.mean(simulated_durations <= base_duration_days * 1.05)
+    on_time = np.mean(simulated_durations <= base_duration_days * 1.20)
     minor_delay = np.mean(
-        (simulated_durations > base_duration_days * 1.05)
-        & (simulated_durations <= base_duration_days * 1.15)
+        (simulated_durations > base_duration_days * 1.20)
+        & (simulated_durations <= base_duration_days * 1.35)
     )
-    major_delay = np.mean(simulated_durations > base_duration_days * 1.15)
+    major_delay = np.mean(simulated_durations > base_duration_days * 1.35)
 
     p50_dur = float(np.percentile(simulated_durations, 50))
     p80_dur = float(np.percentile(simulated_durations, 80))
@@ -84,14 +84,14 @@ def run_monte_carlo(
             impact_days=0, impact_cost=0.0, trigger="No major issues",
         ),
         RiskScenario(
-            scenario="Minor delay (5-15% overrun)",
+            scenario="Minor delay (20-35% overrun)",
             probability=round(float(minor_delay), 3),
             impact_days=int(p80_dur - base_duration_days),
             impact_cost=round(p80_cost - base_cost, 2),
             trigger="Rework from defects or weather",
         ),
         RiskScenario(
-            scenario="Major delay (>15% overrun)",
+            scenario="Major delay (>35% overrun)",
             probability=round(float(major_delay), 3),
             impact_days=int(p95_dur - base_duration_days),
             impact_cost=round(p95_cost - base_cost, 2),

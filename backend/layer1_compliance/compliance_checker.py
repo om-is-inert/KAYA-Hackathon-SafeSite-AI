@@ -65,7 +65,7 @@ async def check_compliance(
 
     response = await model.generate_content_async(
         prompt,
-        generation_config=genai.GenerationConfig(temperature=0.2, max_output_tokens=8192),
+        generation_config=genai.GenerationConfig(temperature=0.2, max_output_tokens=8192, response_mime_type="application/json"),
     )
 
     raw_text = response.text.strip()

@@ -16,7 +16,7 @@ from backend.models import (
     PPEReport, BD3ClassificationReport, ScanToBIMReport,
 )
 from backend.layer3_foresight.risk_modeler import run_monte_carlo
-from backend.layer3_foresight.optimizer import optimize_resources
+from backend.layer3_foresight.cost_optimizer import optimize_resources
 
 logger = logging.getLogger(__name__)
 

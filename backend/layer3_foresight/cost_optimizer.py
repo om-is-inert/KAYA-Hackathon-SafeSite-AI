@@ -1,6 +1,8 @@
 """
-SafeSite AI — Layer 3 — MILP Resource Optimizer
+SafeSite AI — Layer 3 — LP-Based Resource Cost Optimizer
 Triggered when Layer 2 flags defects requiring rework.
+Uses linear programming (scipy.linprog) to find minimum-cost task
+duration allocation subject to workforce constraints.
 """
 
 from __future__ import annotations
@@ -45,7 +47,7 @@ def optimize_resources(
 
     # Constraints: total workers per day <= total_workers (simplified)
     A_ub = np.array([[t["workers_needed"] for t in tasks]], dtype=float)
-    b_ub = np.array([total_workers], dtype=float)
+    b_ub = np.array([total_workers * total_days], dtype=float)
 
     # Bounds: each task must run at least its min duration
     bounds = [(t["duration_days"], t["duration_days"] * 1.5) for t in tasks]

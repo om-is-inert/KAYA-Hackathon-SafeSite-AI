@@ -171,7 +171,7 @@ async def _classify_defects_vlm(
     logger.info("Running BD3-guided defect classification via %s...", VLM_MODEL)
     response = await model.generate_content_async(
         [BD3_CLASSIFICATION_PROMPT, image_part],
-        generation_config=genai.GenerationConfig(temperature=0.1, max_output_tokens=4096),
+        generation_config=genai.GenerationConfig(temperature=0.1, max_output_tokens=8192, response_mime_type="application/json"),
     )
 
     raw = response.text.strip()

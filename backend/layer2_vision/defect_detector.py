@@ -77,7 +77,7 @@ async def detect_defects(
     logger.info("Sending site photo to %s for defect detection...", VLM_MODEL)
     response = await model.generate_content_async(
         [DEFECT_DETECTION_PROMPT, image_part],
-        generation_config=genai.GenerationConfig(temperature=0.1, max_output_tokens=4096),
+        generation_config=genai.GenerationConfig(temperature=0.1, max_output_tokens=8192, response_mime_type="application/json"),
     )
 
     raw = response.text.strip()
@@ -90,7 +90,15 @@ async def detect_defects(
     except json.JSONDecodeError:
         import re
         m = re.search(r"\{.*\}", raw, re.DOTALL)
-        result = json.loads(m.group()) if m else {"defects": []}
+        if m:
+            try:
+                result = json.loads(m.group())
+            except json.JSONDecodeError:
+                logger.error("Gemini response was truncated/unparseable, likely token limit. Raw response: %s", raw[:500])
+                raise
+        else:
+            logger.error("Gemini response was truncated/unparseable, likely token limit. Raw response: %s", raw[:500])
+            raise
 
     defects = []
     for d in result.get("defects", []):
