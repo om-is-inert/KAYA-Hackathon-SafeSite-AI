@@ -22,52 +22,8 @@ body {
   overflow: hidden;
 }
 
-/* White Navbar across the screen */
-.floating-nav {
-  position: fixed;
-  top: 0;
-  width: 100%;
-  background: rgba(255, 255, 255, 1);
-  height: 70px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 5%;
-  z-index: 99999;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
-}
 
-.nav-logo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 20px;
-  font-weight: 700;
-  color: #000;
-  letter-spacing: -0.03em;
-}
 
-.logo-icon {
-  font-size: 22px;
-}
-
-.nav-links {
-  list-style: none;
-  display: flex;
-  gap: 32px;
-}
-
-.nav-links a {
-  text-decoration: none;
-  color: #000;
-  font-size: 13px;
-  font-weight: 600;
-  transition: color 0.2s;
-}
-
-.nav-links a:hover {
-  color: #666;
-}
 
 /* Outlined nav CTA — no fill by default, inverts on hover */
 .nav-cta {

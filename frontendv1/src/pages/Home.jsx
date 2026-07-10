@@ -1,6 +1,5 @@
 import { useState, useRef } from 'react';
 import TextPressure from '../components/TextPressure';
-import SideMenu from '../components/SideMenu';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -13,7 +12,6 @@ import { Link } from 'react-router-dom';
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 function Home() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const containerRef = useRef();
   const heroRef = useRef();
   const videoRef = useRef();
@@ -78,27 +76,6 @@ function Home() {
 
   return (
     <div ref={containerRef} className="app-container page-transition">
-      <SideMenu isOpen={isMenuOpen} closeMenu={() => setIsMenuOpen(false)} />
-
-      {/* Floating Full-Width Navbar */}
-      <nav className="floating-nav">
-        <div 
-          className="nav-logo" 
-          onClick={() => setIsMenuOpen(prev => !prev)}
-          style={{ cursor: 'pointer' }}
-        >
-          <span className="logo-icon">≣</span>
-          <span className="logo-text">SafeSite AI</span>
-        </div>
-        <ul className="nav-links">
-          <li><Link to="/">Overview</Link></li>
-          <li><Link to="/compliance-engine">Compliance Engine</Link></li>
-          <li><a href="#">Vision Engine</a></li>
-          <li><a href="#">Forsight Engine</a></li>
-          <li><a href="#">Team</a></li>
-        </ul>
-        <a href="#" className="nav-cta">Get in Touch</a>
-      </nav>
 
       {/* Pinned Hero Section */}
       <div ref={heroRef} className="hero-section">

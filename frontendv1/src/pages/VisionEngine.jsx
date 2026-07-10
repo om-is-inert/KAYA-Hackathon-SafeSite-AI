@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import SideMenu from '../components/SideMenu';
 import TextPressure from '../components/TextPressure';
 import veHeroVideo from '../../Assets/13177813_1920_1080_60fps.mp4';
+import closingPhoto from '../../Assets/pexels-danielellis-11701517.jpg';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -11,7 +11,6 @@ import './ComplianceEngine.css'; // Reusing exact same styles
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 export default function VisionEngine() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [openStat, setOpenStat] = useState(null);
   const containerRef = useRef();
   const heroRef = useRef();
@@ -96,27 +95,6 @@ export default function VisionEngine() {
 
   return (
     <div ref={containerRef} className="ce-dashboard page-transition">
-      <SideMenu isOpen={isMenuOpen} closeMenu={() => setIsMenuOpen(false)} />
-
-      {/* Floating Full-Width Navbar */}
-      <nav className="floating-nav">
-        <div 
-          className="nav-logo" 
-          onClick={() => setIsMenuOpen(prev => !prev)}
-          style={{ cursor: 'pointer' }}
-        >
-          <span className="logo-icon">≣</span>
-          <span className="logo-text">SafeSite AI</span>
-        </div>
-        <ul className="nav-links">
-          <li><Link to="/">Overview</Link></li>
-          <li><Link to="/compliance-engine">Compliance Engine</Link></li>
-          <li><Link to="/vision-engine">Vision Engine</Link></li>
-          <li><a href="#">Forsight Engine</a></li>
-          <li><a href="#">Team</a></li>
-        </ul>
-        <a href="#" className="nav-cta">Get in Touch</a>
-      </nav>
 
       <div ref={heroRef} className="ce-hero">
         <video 
@@ -245,6 +223,22 @@ export default function VisionEngine() {
           </div>
         </div>
       </div>
+
+      {/* Closing Photo Break */}
+      <section className="ce-photo-break">
+        <img src={closingPhoto} alt="Vision Engine Closing" />
+      </section>
+
+      {/* Story block */}
+      <section className="ce-story-section" style={{ background: '#FAFAFA', padding: '8rem 4rem', display: 'flex', justifyContent: 'center', textAlign: 'center' }}>
+        <div style={{ maxWidth: '800px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <span style={{ fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', color: '#666', margin: '0 0 1.5rem 0' }}>02 — VISION ENGINE</span>
+          <h3 style={{ fontSize: '2.2rem', fontWeight: 600, lineHeight: 1.3, color: '#111', letterSpacing: '-0.02em', margin: '0 0 2.5rem 0' }}>
+            Computer vision scans job site imagery in real time, flagging structural defects human inspectors miss.
+          </h3>
+          <a href="#" className="nav-cta cta-large">See How It Works</a>
+        </div>
+      </section>
     </div>
   );
 }
