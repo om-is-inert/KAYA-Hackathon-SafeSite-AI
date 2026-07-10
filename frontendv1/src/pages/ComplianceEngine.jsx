@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import TextPressure from '../components/TextPressure';
 import ceHeroVideo from '../../Assets/8471078-hd_1920_1080_25fps.mp4';
@@ -10,20 +10,68 @@ import './ComplianceEngine.css';
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
+const API_BASE = 'http://localhost:8000';
+
 export default function ComplianceEngine() {
   const [openStat, setOpenStat] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [result, setResult] = useState(null);
   const containerRef = useRef();
   const heroRef = useRef();
   const videoRef = useRef();
+  const fileInputRef = useRef();
 
   const toggleStat = (i) => setOpenStat(prev => (prev === i ? null : i));
 
   const statDetails = [
-    "Aggregates results across all three verification layers \u2014 design compliance, on-site inspection, and predictive risk modeling \u2014 into a single pass/fail signal for the project.",
+    "Aggregates results across all three verification layers — design compliance, on-site inspection, and predictive risk modeling — into a single pass/fail signal for the project.",
     "Cross-checks the uploaded blueprint against your selected building codes, catching code violations before construction begins.",
     "Computer vision compares live site imagery against the approved plan as work progresses, flagging structural deviations as they happen.",
     "Runs 10,000 Monte Carlo simulations against historical build data to estimate the likelihood of hitting your project deadline."
   ];
+
+  const handleUpload = useCallback(async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsLoading(true);
+    setError(null);
+    setResult(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('blueprint', file);
+      formData.append('codes', 'NBC 2016 Part IV,IS 456:2000');
+
+      const response = await fetch(`${API_BASE}/api/v1/compliance/analyze`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.detail || `Server error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setResult(data);
+    } catch (err) {
+      setError(err.message || 'Failed to analyze blueprint. Is the backend running?');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const severityColor = (sev) => {
+    switch (sev) {
+      case 'CRITICAL': return '#D32F2F';
+      case 'HIGH': return '#E65100';
+      case 'MEDIUM': return '#F9A825';
+      case 'LOW': return '#666';
+      default: return '#111';
+    }
+  };
 
   useGSAP(() => {
     // Hero pinning and video scale
@@ -140,18 +188,75 @@ export default function ComplianceEngine() {
 
           <div className="ce-workspace-right">
             <h2 className="ce-section-title">Identified Violations</h2>
-            <div className="ce-empty-state">
-              <span className="ce-empty-title">No Violations Detected Yet</span>
-              <span className="ce-empty-sub">Upload an architectural layout to start compliance verification.</span>
-            </div>
+            {result && result.violations && result.violations.length > 0 ? (
+              <div className="ce-violations-list">
+                {result.violations.map((v, i) => (
+                  <div key={v.id || i} className="ce-violation-card" style={{
+                    padding: '1.2rem 1.5rem',
+                    borderLeft: `3px solid ${severityColor(v.severity)}`,
+                    background: '#FAFAFA',
+                    marginBottom: '0.75rem',
+                    borderRadius: '0 4px 4px 0',
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 700, color: severityColor(v.severity), textTransform: 'uppercase', letterSpacing: '0.1em' }}>{v.severity}</span>
+                      <span style={{ fontSize: '11px', color: '#999', fontFamily: 'monospace' }}>{v.id}</span>
+                    </div>
+                    <p style={{ fontSize: '14px', fontWeight: 600, color: '#111', margin: '0 0 0.4rem 0' }}>{v.exact_location}</p>
+                    <p style={{ fontSize: '13px', color: '#444', margin: '0 0 0.4rem 0' }}>
+                      Measured: <strong>{v.measured_value}</strong> · Required: <strong>{v.required_value}</strong>
+                    </p>
+                    <p style={{ fontSize: '12px', color: '#666', margin: '0 0 0.4rem 0', fontStyle: 'italic' }}>{v.code_reference}</p>
+                    <p style={{ fontSize: '12px', color: '#555', margin: 0 }}>Fix: {v.fix_suggestion}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="ce-empty-state">
+                <span className="ce-empty-title">{result ? 'No Violations Found — All Clear' : 'No Violations Detected Yet'}</span>
+                <span className="ce-empty-sub">{result ? `Blueprint "${result.blueprint_filename}" passed compliance checks.` : 'Upload an architectural layout to start compliance verification.'}</span>
+              </div>
+            )}
           </div>
         </div>
 
         <div className="ce-workspace-middle">
           <h2 className="ce-section-title" style={{ textAlign: 'center' }}>2. Upload Floor Plan / Blueprint</h2>
-          <div className="ce-dropzone">
-            <span className="ce-dropzone-text">Drop blueprint here or click to upload</span>
-            <span className="ce-dropzone-sub">Supports PDF, PNG, JPG (architectural layouts, floor plans)</span>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,.png,.jpg,.jpeg"
+            style={{ display: 'none' }}
+            onChange={handleUpload}
+          />
+          <div
+            className="ce-dropzone"
+            onClick={() => !isLoading && fileInputRef.current?.click()}
+            style={{ cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.6 : 1 }}
+          >
+            {isLoading ? (
+              <>
+                <span className="ce-dropzone-text">Analyzing blueprint...</span>
+                <span className="ce-dropzone-sub">This may take 15–30 seconds while the Gemini VLM processes your file.</span>
+              </>
+            ) : error ? (
+              <>
+                <span className="ce-dropzone-text" style={{ color: '#D32F2F' }}>Analysis Failed</span>
+                <span className="ce-dropzone-sub" style={{ color: '#D32F2F' }}>{error}</span>
+                <span className="ce-dropzone-sub">Click to try again</span>
+              </>
+            ) : result ? (
+              <>
+                <span className="ce-dropzone-text" style={{ color: '#2E7D32' }}>✓ Analysis Complete — {result.blueprint_filename}</span>
+                <span className="ce-dropzone-sub">{result.total_violations} violation{result.total_violations !== 1 ? 's' : ''} found · Score: {result.compliance_score}/100</span>
+                <span className="ce-dropzone-sub">Click to analyze another blueprint</span>
+              </>
+            ) : (
+              <>
+                <span className="ce-dropzone-text">Drop blueprint here or click to upload</span>
+                <span className="ce-dropzone-sub">Supports PDF, PNG, JPG (architectural layouts, floor plans)</span>
+              </>
+            )}
           </div>
         </div>
       </section>
@@ -174,7 +279,9 @@ export default function ComplianceEngine() {
                 <div className="ce-stat-expand">
                   <div className="ce-stat-expand-inner">
                     <p>{statDetails[0]}</p>
-                    <div className="ce-stat-minimal-value">Score: 100 (Pass)</div>
+                    <div className="ce-stat-minimal-value">
+                      Score: {result ? `${result.compliance_score} (${result.compliance_score >= 80 ? 'Pass' : 'Fail'})` : '100 (Pass)'}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -187,7 +294,12 @@ export default function ComplianceEngine() {
                 <div className="ce-stat-expand">
                   <div className="ce-stat-expand-inner">
                     <p>{statDetails[1]}</p>
-                    <div className="ce-stat-minimal-value">Detected: 0</div>
+                    <div className="ce-stat-minimal-value">
+                      Detected: {result ? result.total_violations : 0}
+                      {result && result.critical_count > 0 && (
+                        <span style={{ color: '#D32F2F', marginLeft: '0.5rem' }}>({result.critical_count} Critical)</span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

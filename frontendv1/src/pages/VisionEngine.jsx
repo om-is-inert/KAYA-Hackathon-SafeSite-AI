@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import TextPressure from '../components/TextPressure';
 import veHeroVideo from '../../Assets/13177813_1920_1080_60fps.mp4';
@@ -10,20 +10,67 @@ import './ComplianceEngine.css'; // Reusing exact same styles
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
+const API_BASE = 'http://localhost:8000';
+
 export default function VisionEngine() {
   const [openStat, setOpenStat] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [report, setReport] = useState(null);
   const containerRef = useRef();
   const heroRef = useRef();
   const videoRef = useRef();
+  const fileInputRef = useRef();
 
   const toggleStat = (i) => setOpenStat(prev => (prev === i ? null : i));
 
   const statDetails = [
-    "Aggregates results across all three verification layers \u2014 design compliance, on-site inspection, and predictive risk modeling \u2014 into a single pass/fail signal for the project.",
+    "Aggregates results across all three verification layers — design compliance, on-site inspection, and predictive risk modeling — into a single pass/fail signal for the project.",
     "Cross-checks the uploaded blueprint against your selected building codes, catching code violations before construction begins.",
     "Computer vision compares live site imagery against the approved plan as work progresses, flagging structural deviations as they happen.",
     "Runs 10,000 Monte Carlo simulations against historical build data to estimate the likelihood of hitting your project deadline."
   ];
+
+  const handleUpload = useCallback(async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsLoading(true);
+    setError(null);
+    setReport(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const response = await fetch(`${API_BASE}/api/v1/vision/defect/analyze`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.detail || `Server error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setReport(data);
+    } catch (err) {
+      setError(err.message || 'Failed to analyze image. Is the backend running?');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const severityColor = (sev) => {
+    switch (sev) {
+      case 'CRITICAL': return '#D32F2F';
+      case 'HIGH': return '#E65100';
+      case 'MEDIUM': return '#F9A825';
+      case 'LOW': return '#666';
+      default: return '#111';
+    }
+  };
 
   useGSAP(() => {
     // Hero pinning and video scale
@@ -141,18 +188,80 @@ export default function VisionEngine() {
 
           <div className="ce-workspace-right">
             <h2 className="ce-section-title">Detected Structural Defects</h2>
-            <div className="ce-empty-state">
-              <span className="ce-empty-title">No Defects Logged</span>
-              <span className="ce-empty-sub">Upload site footage to generate defect masks & structural reports.</span>
-            </div>
+            {report && report.defects && report.defects.length > 0 ? (
+              <div className="ce-violations-list">
+                {report.defects.map((d, i) => (
+                  <div key={d.id || i} className="ce-violation-card" style={{
+                    padding: '1.2rem 1.5rem',
+                    borderLeft: `3px solid ${severityColor(d.severity)}`,
+                    background: '#FAFAFA',
+                    marginBottom: '0.75rem',
+                    borderRadius: '0 4px 4px 0',
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 700, color: severityColor(d.severity), textTransform: 'uppercase', letterSpacing: '0.1em' }}>{d.severity}</span>
+                      <span style={{ fontSize: '12px', color: '#555', fontWeight: 600 }}>{d.defect_type}</span>
+                    </div>
+                    <p style={{ fontSize: '14px', fontWeight: 600, color: '#111', margin: '0 0 0.4rem 0' }}>{d.location}</p>
+                    <p style={{ fontSize: '13px', color: '#444', margin: '0 0 0.4rem 0' }}>{d.description}</p>
+                    {d.code_reference && (
+                      <p style={{ fontSize: '12px', color: '#666', margin: '0 0 0.4rem 0', fontStyle: 'italic' }}>{d.code_reference}</p>
+                    )}
+                    <p style={{ fontSize: '12px', color: '#555', margin: 0 }}>Remediation: {d.remediation}</p>
+                  </div>
+                ))}
+                {report.estimated_repair_cost && (
+                  <div style={{ padding: '1rem 1.5rem', background: '#F5F5F5', borderRadius: '4px', marginTop: '0.5rem', fontSize: '13px', color: '#444' }}>
+                    Est. Repair: {report.estimated_repair_cost} · {report.estimated_repair_time}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="ce-empty-state">
+                <span className="ce-empty-title">{report ? `Condition: ${report.overall_condition}` : 'No Defects Logged'}</span>
+                <span className="ce-empty-sub">{report ? `"${report.image_filename}" — ${report.total_defects} defect(s) detected.` : 'Upload site footage to generate defect masks & structural reports.'}</span>
+              </div>
+            )}
           </div>
         </div>
 
         <div className="ce-workspace-middle">
           <h2 className="ce-section-title" style={{ textAlign: 'center' }}>2. Upload Site Inspection Photo</h2>
-          <div className="ce-dropzone">
-            <span className="ce-dropzone-text">Drop site photograph here or click to upload</span>
-            <span className="ce-dropzone-sub">Supports PNG, JPG, WEBP (columns, slabs, reinforcement, formwork)</span>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".png,.jpg,.jpeg,.webp"
+            style={{ display: 'none' }}
+            onChange={handleUpload}
+          />
+          <div
+            className="ce-dropzone"
+            onClick={() => !isLoading && fileInputRef.current?.click()}
+            style={{ cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.6 : 1 }}
+          >
+            {isLoading ? (
+              <>
+                <span className="ce-dropzone-text">Scanning site photo for defects...</span>
+                <span className="ce-dropzone-sub">YOLOv11-seg + Gemini VLM are processing your image. This may take 15–30 seconds.</span>
+              </>
+            ) : error ? (
+              <>
+                <span className="ce-dropzone-text" style={{ color: '#D32F2F' }}>Analysis Failed</span>
+                <span className="ce-dropzone-sub" style={{ color: '#D32F2F' }}>{error}</span>
+                <span className="ce-dropzone-sub">Click to try again</span>
+              </>
+            ) : report ? (
+              <>
+                <span className="ce-dropzone-text" style={{ color: '#2E7D32' }}>✓ Scan Complete — {report.image_filename}</span>
+                <span className="ce-dropzone-sub">{report.total_defects} defect{report.total_defects !== 1 ? 's' : ''} found · Condition: {report.overall_condition}</span>
+                <span className="ce-dropzone-sub">Click to scan another photo</span>
+              </>
+            ) : (
+              <>
+                <span className="ce-dropzone-text">Drop site photograph here or click to upload</span>
+                <span className="ce-dropzone-sub">Supports PNG, JPG, WEBP (columns, slabs, reinforcement, formwork)</span>
+              </>
+            )}
           </div>
         </div>
       </section>
@@ -175,7 +284,9 @@ export default function VisionEngine() {
                 <div className="ce-stat-expand">
                   <div className="ce-stat-expand-inner">
                     <p>{statDetails[0]}</p>
-                    <div className="ce-stat-minimal-value">Score: 100 (Pass)</div>
+                    <div className="ce-stat-minimal-value">
+                      Score: {report ? (report.overall_condition === 'Fair' ? '70' : report.overall_condition === 'Poor' ? '40' : report.overall_condition === 'Critical' ? '15' : '100') : '100'} ({report ? report.overall_condition : 'Pass'})
+                    </div>
                   </div>
                 </div>
               </div>
@@ -201,7 +312,12 @@ export default function VisionEngine() {
                 <div className="ce-stat-expand">
                   <div className="ce-stat-expand-inner">
                     <p>{statDetails[2]}</p>
-                    <div className="ce-stat-minimal-value">Detected: 0</div>
+                    <div className="ce-stat-minimal-value">
+                      Detected: {report ? report.total_defects : 0}
+                      {report && report.critical_count > 0 && (
+                        <span style={{ color: '#D32F2F', marginLeft: '0.5rem' }}>({report.critical_count} Critical)</span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

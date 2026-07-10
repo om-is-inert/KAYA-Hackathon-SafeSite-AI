@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import TextPressure from '../components/TextPressure';
 import feHeroVideo from '../../Assets/14378494_1920_1080_24fps.mp4';
@@ -11,8 +11,17 @@ import './ComplianceEngine.css'; // Reusing exact same styles
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
+const API_BASE = 'http://localhost:8000';
+
 export default function ForesightEngine() {
   const [openStat, setOpenStat] = useState(null);
+  const [isSimulating, setIsSimulating] = useState(false);
+  const [isOptimizing, setIsOptimizing] = useState(false);
+  const [isForecasting, setIsForecasting] = useState(false);
+  const [riskReport, setRiskReport] = useState(null);
+  const [optimizeResult, setOptimizeResult] = useState(null);
+  const [forecastResult, setForecastResult] = useState(null);
+  const [error, setError] = useState(null);
   const containerRef = useRef();
   const heroRef = useRef();
   const videoRef = useRef();
@@ -29,6 +38,85 @@ export default function ForesightEngine() {
     "Probability of schedule delays due to impending weather events.",
     "Risk of material shortages based on global logistics tracking."
   ];
+
+  // ── Run Simulation ──
+  const handleRunSimulation = useCallback(async () => {
+    setIsSimulating(true);
+    setError(null);
+    try {
+      const formData = new FormData();
+      formData.append('base_duration', '180');
+      formData.append('base_cost', '5000000');
+
+      const response = await fetch(`${API_BASE}/api/v1/foresight/risk`, {
+        method: 'POST',
+        body: formData,
+      });
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.detail || `Server error: ${response.status}`);
+      }
+      const data = await response.json();
+      setRiskReport(data);
+    } catch (err) {
+      setError(err.message || 'Failed to run simulation.');
+    } finally {
+      setIsSimulating(false);
+    }
+  }, []);
+
+  // ── Run Optimization ──
+  const handleOptimize = useCallback(async () => {
+    setIsOptimizing(true);
+    setError(null);
+    try {
+      const response = await fetch(`${API_BASE}/api/v1/foresight/optimize`, {
+        method: 'POST',
+      });
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.detail || `Server error: ${response.status}`);
+      }
+      const data = await response.json();
+      setOptimizeResult(data);
+    } catch (err) {
+      setError(err.message || 'Failed to run optimization.');
+    } finally {
+      setIsOptimizing(false);
+    }
+  }, []);
+
+  // ── Run Forecast ──
+  const handleForecast = useCallback(async () => {
+    setIsForecasting(true);
+    setError(null);
+    try {
+      const formData = new FormData();
+      formData.append('horizon_days', '90');
+      formData.append('target', 'cement_cost_index');
+
+      const response = await fetch(`${API_BASE}/api/v1/foresight/forecast`, {
+        method: 'POST',
+        body: formData,
+      });
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.detail || `Server error: ${response.status}`);
+      }
+      const data = await response.json();
+      setForecastResult(data);
+    } catch (err) {
+      setError(err.message || 'Failed to run forecast.');
+    } finally {
+      setIsForecasting(false);
+    }
+  }, []);
+
+  const scenarioColor = (scenario) => {
+    if (scenario.includes('On-time')) return '#2E7D32';
+    if (scenario.includes('Minor')) return '#E65100';
+    return '#D32F2F';
+  };
 
   useGSAP(() => {
     // Hero pinning and video scale
@@ -147,10 +235,40 @@ export default function ForesightEngine() {
 
           <div className="ce-workspace-right">
             <h2 className="ce-section-title">Risk Forecasts</h2>
-            <div className="ce-empty-state">
-              <span className="ce-empty-title">No Forecasts Generated</span>
-              <span className="ce-empty-sub">Upload project schedule and budget to run predictive models.</span>
-            </div>
+            {riskReport && riskReport.risk_scenarios && riskReport.risk_scenarios.length > 0 ? (
+              <div className="ce-violations-list">
+                {riskReport.risk_scenarios.map((s, i) => (
+                  <div key={i} style={{
+                    padding: '1.2rem 1.5rem',
+                    borderLeft: `3px solid ${scenarioColor(s.scenario)}`,
+                    background: '#FAFAFA',
+                    marginBottom: '0.75rem',
+                    borderRadius: '0 4px 4px 0',
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                      <span style={{ fontSize: '14px', fontWeight: 600, color: '#111' }}>{s.scenario}</span>
+                      <span style={{ fontSize: '13px', fontWeight: 700, color: scenarioColor(s.scenario) }}>
+                        {(s.probability * 100).toFixed(1)}%
+                      </span>
+                    </div>
+                    {s.impact_days > 0 && (
+                      <p style={{ fontSize: '13px', color: '#444', margin: '0 0 0.3rem 0' }}>
+                        +{s.impact_days} days delay · +₹{(s.impact_cost / 100000).toFixed(1)}L cost overrun
+                      </p>
+                    )}
+                    <p style={{ fontSize: '12px', color: '#666', margin: 0, fontStyle: 'italic' }}>Trigger: {s.trigger}</p>
+                  </div>
+                ))}
+                <div style={{ padding: '0.8rem 1.5rem', background: '#F5F5F5', borderRadius: '4px', marginTop: '0.5rem', fontSize: '12px', color: '#666' }}>
+                  Based on {riskReport.monte_carlo_iterations.toLocaleString()} Monte Carlo iterations
+                </div>
+              </div>
+            ) : (
+              <div className="ce-empty-state">
+                <span className="ce-empty-title">No Forecasts Generated</span>
+                <span className="ce-empty-sub">Click "Run Simulation" below to run predictive models.</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -220,7 +338,9 @@ export default function ForesightEngine() {
                 <div className="ce-stat-expand">
                   <div className="ce-stat-expand-inner">
                     <p>{statDetails[3]}</p>
-                    <div className="ce-stat-minimal-value">Predicted: Pending</div>
+                    <div className="ce-stat-minimal-value">
+                      {riskReport ? `Predicted: ${(riskReport.on_time_probability * 100).toFixed(1)}%` : 'Predicted: Pending'}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -233,7 +353,9 @@ export default function ForesightEngine() {
                 <div className="ce-stat-expand">
                   <div className="ce-stat-expand-inner">
                     <p>{statDetails[4]}</p>
-                    <div className="ce-stat-minimal-value">Score: Pending</div>
+                    <div className="ce-stat-minimal-value">
+                      {riskReport ? `P80: ${riskReport.risk_scenarios?.[1]?.impact_days || 0} days overrun` : 'Score: Pending'}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -246,7 +368,9 @@ export default function ForesightEngine() {
                 <div className="ce-stat-expand">
                   <div className="ce-stat-expand-inner">
                     <p>{statDetails[5]}</p>
-                    <div className="ce-stat-minimal-value">Predicted: ±0%</div>
+                    <div className="ce-stat-minimal-value">
+                      {optimizeResult ? `Savings: ${optimizeResult.savings_percent}%` : 'Predicted: ±0%'}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -259,7 +383,7 @@ export default function ForesightEngine() {
                 <div className="ce-stat-expand">
                   <div className="ce-stat-expand-inner">
                     <p>{statDetails[6]}</p>
-                    <div className="ce-stat-minimal-value">Risk: Low</div>
+                    <div className="ce-stat-minimal-value">Risk: Coming Soon</div>
                   </div>
                 </div>
               </div>
@@ -272,7 +396,7 @@ export default function ForesightEngine() {
                 <div className="ce-stat-expand">
                   <div className="ce-stat-expand-inner">
                     <p>{statDetails[7]}</p>
-                    <div className="ce-stat-minimal-value">Risk: Unknown</div>
+                    <div className="ce-stat-minimal-value">Risk: Coming Soon</div>
                   </div>
                 </div>
               </div>
@@ -285,62 +409,214 @@ export default function ForesightEngine() {
       <section className="ce-workspace-section" style={{ paddingTop: 0 }}>
         <div style={{ height: '1px', background: '#EAEAEA', width: '100%', marginBottom: '4rem' }}></div>
 
-        {/* Section 6 */}
+        {/* Section 6 — Gantt from schedule_data */}
         <div className="ce-workspace-top">
           <div className="ce-workspace-left">
             <h2 className="ce-section-title">Probabilistic Project Schedule (Gantt)</h2>
           </div>
           <div className="ce-workspace-right">
-            <div className="ce-dropzone" style={{ minHeight: '120px', padding: '3rem 2rem', gap: '1.5rem' }}>
-              <span className="ce-dropzone-text">Click Run Simulation to model delay risks & duration shifts</span>
-              <button className="nav-cta cta-large" style={{ width: 'fit-content' }}>Run Simulation</button>
-            </div>
+            {riskReport && riskReport.schedule_data && riskReport.schedule_data.length > 0 ? (
+              <div style={{ width: '100%' }}>
+                {riskReport.schedule_data.map((phase, i) => (
+                  <div key={i} style={{
+                    display: 'flex', alignItems: 'center', gap: '1rem',
+                    padding: '0.75rem 0', borderBottom: '1px solid #F0F0F0',
+                    fontSize: '13px',
+                  }}>
+                    <span style={{ width: '140px', fontWeight: 600, color: '#111' }}>{phase.phase}</span>
+                    <div style={{ flex: 1, position: 'relative', height: '24px', background: '#F5F5F5', borderRadius: '4px', overflow: 'hidden' }}>
+                      {/* Planned bar */}
+                      <div style={{
+                        position: 'absolute', top: '2px', height: '8px', borderRadius: '4px',
+                        background: '#C8C8C8',
+                        left: `${(phase.planned_start / 220) * 100}%`,
+                        width: `${((phase.planned_end - phase.planned_start) / 220) * 100}%`,
+                      }} />
+                      {/* Projected bar */}
+                      <div style={{
+                        position: 'absolute', top: '14px', height: '8px', borderRadius: '4px',
+                        background: phase.risk_level === 'HIGH' ? '#D32F2F' : phase.risk_level === 'MEDIUM' ? '#E65100' : '#2E7D32',
+                        left: `${(phase.projected_start / 220) * 100}%`,
+                        width: `${((phase.projected_end - phase.projected_start) / 220) * 100}%`,
+                      }} />
+                    </div>
+                    <span style={{
+                      fontSize: '11px', fontWeight: 700, padding: '2px 6px', borderRadius: '3px',
+                      color: phase.risk_level === 'HIGH' ? '#D32F2F' : phase.risk_level === 'MEDIUM' ? '#E65100' : '#2E7D32',
+                      background: phase.risk_level === 'HIGH' ? '#FFEBEE' : phase.risk_level === 'MEDIUM' ? '#FFF3E0' : '#E8F5E9',
+                    }}>{phase.risk_level}</span>
+                  </div>
+                ))}
+                <div style={{ display: 'flex', gap: '1.5rem', marginTop: '0.75rem', fontSize: '11px', color: '#999' }}>
+                  <span>■ Planned</span>
+                  <span style={{ color: '#D32F2F' }}>■ Projected (risk-adjusted)</span>
+                </div>
+              </div>
+            ) : (
+              <div className="ce-dropzone" style={{ minHeight: '120px', padding: '3rem 2rem', gap: '1.5rem' }}>
+                <span className="ce-dropzone-text">Click Run Simulation to model delay risks & duration shifts</span>
+                <button
+                  className="nav-cta cta-large"
+                  style={{ width: 'fit-content' }}
+                  onClick={handleRunSimulation}
+                  disabled={isSimulating}
+                >
+                  {isSimulating ? 'Simulating...' : 'Run Simulation'}
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
         <div style={{ height: '1px', background: '#EAEAEA', width: '100%', margin: '4rem 0' }}></div>
 
-        {/* Section 7 */}
+        {/* Section 7 — MILP Optimization */}
         <div className="ce-workspace-top">
           <div className="ce-workspace-left">
             <h2 className="ce-section-title">MILP Resource Re-Optimization</h2>
           </div>
           <div className="ce-workspace-right">
-            <div className="ce-dropzone" style={{ minHeight: '120px', padding: '3rem 2rem', gap: '1.5rem' }}>
-              <span className="ce-dropzone-text">Trigger optimization to compute minimum-cost crew allocation</span>
-              <button className="nav-cta cta-large" style={{ width: 'fit-content' }}>Re-Optimize</button>
-            </div>
+            {optimizeResult && optimizeResult.status === 'optimal' ? (
+              <div style={{ width: '100%' }}>
+                <div style={{ display: 'flex', gap: '2rem', marginBottom: '1.5rem' }}>
+                  <div style={{ flex: 1, padding: '1rem', background: '#F5F5F5', borderRadius: '6px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.3rem' }}>Original</div>
+                    <div style={{ fontSize: '18px', fontWeight: 700, color: '#111' }}>₹{(optimizeResult.original_cost / 100000).toFixed(1)}L</div>
+                  </div>
+                  <div style={{ flex: 1, padding: '1rem', background: '#E8F5E9', borderRadius: '6px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '11px', color: '#2E7D32', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.3rem' }}>Optimized</div>
+                    <div style={{ fontSize: '18px', fontWeight: 700, color: '#2E7D32' }}>₹{(optimizeResult.optimized_cost / 100000).toFixed(1)}L</div>
+                  </div>
+                  <div style={{ flex: 1, padding: '1rem', background: '#F5F5F5', borderRadius: '6px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.3rem' }}>Savings</div>
+                    <div style={{ fontSize: '18px', fontWeight: 700, color: '#2E7D32' }}>{optimizeResult.savings_percent}%</div>
+                  </div>
+                </div>
+                {optimizeResult.resource_allocation.map((task, i) => (
+                  <div key={i} style={{
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    padding: '0.6rem 0', borderBottom: '1px solid #F0F0F0', fontSize: '13px',
+                  }}>
+                    <span style={{ fontWeight: 500, color: '#111' }}>{task.task}</span>
+                    <span style={{ color: '#666' }}>{task.optimized_days}d · {task.workers} workers · ₹{(task.total_cost / 1000).toFixed(0)}K</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="ce-dropzone" style={{ minHeight: '120px', padding: '3rem 2rem', gap: '1.5rem' }}>
+                <span className="ce-dropzone-text">Trigger optimization to compute minimum-cost crew allocation</span>
+                <button
+                  className="nav-cta cta-large"
+                  style={{ width: 'fit-content' }}
+                  onClick={handleOptimize}
+                  disabled={isOptimizing}
+                >
+                  {isOptimizing ? 'Optimizing...' : 'Re-Optimize'}
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
         <div style={{ height: '1px', background: '#EAEAEA', width: '100%', margin: '4rem 0' }}></div>
 
-        {/* Section 8 */}
+        {/* Section 8 — Material Cost Forecast */}
         <div className="ce-workspace-top">
           <div className="ce-workspace-left">
             <h2 className="ce-section-title">Material Cost Index Forecast</h2>
           </div>
           <div className="ce-workspace-right">
-            <div className="ce-dropzone" style={{ minHeight: '120px', padding: '3rem 2rem', gap: '1.5rem' }}>
-              <span className="ce-dropzone-text">Time-series projection will chart cement/steel volatility here</span>
-            </div>
+            {forecastResult && forecastResult.predictions && forecastResult.predictions.length > 0 ? (
+              <div style={{ width: '100%' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', fontSize: '12px', color: '#666' }}>
+                  <span>Target: {forecastResult.target}</span>
+                  <span>{forecastResult.horizon_days}-day horizon</span>
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end', height: '120px' }}>
+                  {forecastResult.predictions.filter((_, i) => i % 5 === 0).map((p, i) => {
+                    const minVal = Math.min(...forecastResult.predictions.map(p => p.lower_bound));
+                    const maxVal = Math.max(...forecastResult.predictions.map(p => p.upper_bound));
+                    const range = maxVal - minVal || 1;
+                    const height = ((p.value - minVal) / range) * 100;
+                    return (
+                      <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                        <div style={{
+                          width: '100%', background: '#111', borderRadius: '2px 2px 0 0',
+                          height: `${Math.max(height, 5)}%`,
+                          transition: 'height 0.3s ease',
+                        }} />
+                      </div>
+                    );
+                  })}
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', fontSize: '11px', color: '#999' }}>
+                  <span>{forecastResult.predictions[0].date}</span>
+                  <span>{forecastResult.predictions[forecastResult.predictions.length - 1].date}</span>
+                </div>
+              </div>
+            ) : (
+              <div className="ce-dropzone" style={{ minHeight: '120px', padding: '3rem 2rem', gap: '1.5rem' }}>
+                <span className="ce-dropzone-text">Time-series projection will chart cement/steel volatility here</span>
+                <button
+                  className="nav-cta cta-large"
+                  style={{ width: 'fit-content' }}
+                  onClick={handleForecast}
+                  disabled={isForecasting}
+                >
+                  {isForecasting ? 'Forecasting...' : 'Run Forecast'}
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
         <div style={{ height: '1px', background: '#EAEAEA', width: '100%', margin: '4rem 0' }}></div>
 
-        {/* Section 9 */}
+        {/* Section 9 — Monte Carlo Risk Distribution */}
         <div className="ce-workspace-top">
           <div className="ce-workspace-left">
             <h2 className="ce-section-title" style={{ color: '#111' }}>Monte Carlo Risk Distribution</h2>
           </div>
           <div className="ce-workspace-right">
-            <div className="ce-dropzone" style={{ minHeight: '120px', padding: '3rem 2rem', gap: '1.5rem' }}>
-              <span className="ce-dropzone-text">Execute simulation to view scenario likelihoods</span>
-            </div>
+            {riskReport && riskReport.risk_scenarios ? (
+              <div style={{ width: '100%' }}>
+                {riskReport.risk_scenarios.map((s, i) => (
+                  <div key={i} style={{ marginBottom: '1rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem', fontSize: '13px' }}>
+                      <span style={{ fontWeight: 500, color: '#111' }}>{s.scenario}</span>
+                      <span style={{ fontWeight: 700, color: scenarioColor(s.scenario) }}>{(s.probability * 100).toFixed(1)}%</span>
+                    </div>
+                    <div style={{ width: '100%', height: '8px', background: '#F0F0F0', borderRadius: '4px', overflow: 'hidden' }}>
+                      <div style={{
+                        height: '100%', borderRadius: '4px',
+                        background: scenarioColor(s.scenario),
+                        width: `${s.probability * 100}%`,
+                        transition: 'width 0.5s ease',
+                      }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="ce-dropzone" style={{ minHeight: '120px', padding: '3rem 2rem', gap: '1.5rem' }}>
+                <span className="ce-dropzone-text">Execute simulation to view scenario likelihoods</span>
+              </div>
+            )}
           </div>
         </div>
       </section>
+
+      {/* Error Banner */}
+      {error && (
+        <div style={{
+          position: 'fixed', bottom: '2rem', left: '50%', transform: 'translateX(-50%)',
+          background: '#D32F2F', color: '#fff', padding: '1rem 2rem', borderRadius: '8px',
+          fontSize: '14px', fontWeight: 500, zIndex: 1000, boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+          maxWidth: '600px', textAlign: 'center',
+        }}>
+          {error}
+        </div>
+      )}
 
       {/* Closing Photo Break */}
       <section className="ce-photo-break">
