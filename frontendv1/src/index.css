@@ -69,20 +69,22 @@ body {
   color: #666;
 }
 
-/* Light blue call to action button */
+/* Outlined nav CTA — no fill by default, inverts on hover */
 .nav-cta {
   text-decoration: none;
-  background-color: #d6e5fb;
-  color: #000;
+  background-color: transparent;
+  color: #111;
   padding: 10px 20px;
   border-radius: 4px;
+  border: 1.5px solid #111;
   font-size: 13px;
   font-weight: 600;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, color 0.2s;
 }
 
 .nav-cta:hover {
-  background-color: #c0d5f2;
+  background-color: #111;
+  color: #fff;
 }
 
 /* Background video */
@@ -168,11 +170,11 @@ body {
 }
 
 .eyebrow-label {
-  font-size: 32px;
+  font-size: 14px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.15em;
-  color: #5a45ff;
+  letter-spacing: 0.2em;
+  color: #666;
 }
 
 .overview-right {
@@ -192,17 +194,17 @@ body {
 }
 
 .cta-large {
-  font-size: 16px;
-  padding: 14px 28px;
-  border-radius: 8px;
-  background-color: #5a45ff;
+  font-size: 15px;
+  padding: 14px 30px;
+  border-radius: 4px;
+  background-color: #111;
   color: #fff;
   transition: background-color 0.2s, transform 0.2s;
-  border: none;
+  border: 1.5px solid #111;
 }
 
 .cta-large:hover {
-  background-color: #4532db;
+  background-color: #333;
   color: #fff;
   transform: translateY(-2px);
 }
@@ -210,23 +212,39 @@ body {
 .feature-blocks {
   display: flex;
   flex-direction: column;
-  gap: 120px;
+  gap: 140px;
   margin-top: 6rem;
   width: 100%;
 }
 
 .feature-block {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 0.85fr 1.15fr;
   gap: 4rem;
   align-items: center;
 }
 
+.feature-reverse {
+  grid-template-columns: 1.15fr 0.85fr;
+}
+
 .feature-image {
-  width: 100%;
+  width: 92%;
+  max-width: 500px;
   aspect-ratio: 4/3;
   overflow: hidden;
   border-radius: 0; /* Sharp corners */
+  margin: 0 auto;
+}
+
+.feature-reverse .feature-image {
+  margin-left: auto;
+  margin-right: 0;
+}
+
+.feature-block:not(.feature-reverse) .feature-image {
+  margin-left: 0;
+  margin-right: auto;
 }
 
 .feature-image img {
@@ -244,18 +262,18 @@ body {
 
 .feature-eyebrow {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 32px;
+  font-size: 20px;
   font-weight: 600;
-  color: #5a45ff;
+  color: #111;
   text-transform: uppercase;
   letter-spacing: 0.15em;
 }
 
 .feature-body {
-  font-size: 2rem;
+  font-size: 1.35rem;
   font-weight: 500;
-  line-height: 1.35;
-  color: #111;
+  line-height: 1.5;
+  color: #333;
   letter-spacing: -0.01em;
 }
 

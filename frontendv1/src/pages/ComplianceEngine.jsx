@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import SideMenu from '../components/SideMenu';
 import TextPressure from '../components/TextPressure';
-import ceHeroVideo from '../../Assets/4790152_Building_Working_1280x720.mp4';
+import ceHeroVideo from '../../Assets/8471078-hd_1920_1080_25fps.mp4';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -12,9 +12,19 @@ gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 export default function ComplianceEngine() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [openStat, setOpenStat] = useState(null);
   const containerRef = useRef();
   const heroRef = useRef();
   const videoRef = useRef();
+
+  const toggleStat = (i) => setOpenStat(prev => (prev === i ? null : i));
+
+  const statDetails = [
+    "Aggregates results across all three verification layers \u2014 design compliance, on-site inspection, and predictive risk modeling \u2014 into a single pass/fail signal for the project.",
+    "Cross-checks the uploaded blueprint against your selected building codes, catching code violations before construction begins.",
+    "Computer vision compares live site imagery against the approved plan as work progresses, flagging structural deviations as they happen.",
+    "Runs 10,000 Monte Carlo simulations against historical build data to estimate the likelihood of hitting your project deadline."
+  ];
 
   useGSAP(() => {
     // Hero pinning and video scale
@@ -30,57 +40,17 @@ export default function ComplianceEngine() {
 
     tl.to(videoRef.current, { scale: 1.15, ease: "power2.in" }, 0);
     tl.to('.ce-hero-content', { opacity: 0, ease: "power2.in" }, 0);
-    // Butter smooth scrubbed animations for zigzag stats
-    gsap.utils.toArray('.ce-zigzag-block').forEach((block, i) => {
-      const text = block.querySelector('.ce-zigzag-text');
-      const val = block.querySelector('.ce-zigzag-value-container');
-      
-      const textIsLeft = i % 2 === 0;
-
-      // Animate text sliding in from the side
-      gsap.fromTo(text,
-        { opacity: 0, x: textIsLeft ? -50 : 50 },
-        { 
-          opacity: 1, 
-          x: 0, 
-          ease: "power2.in",
-          scrollTrigger: {
-            trigger: block,
-            start: "top 85%",
-            end: "top 50%",
-            scrub: 1.5
-          }
-        }
-      );
-
-      // Animate value fading and scaling up
-      gsap.fromTo(val,
-        { opacity: 0, scale: 0.8, y: 50 },
-        { 
-          opacity: 1, 
-          scale: 1, 
-          y: 0,
-          ease: "power2.in",
-          scrollTrigger: {
-            trigger: block,
-            start: "top 95%",
-            end: "top 55%",
-            scrub: 1.5
-          }
-        }
-      );
-    });
-
-    // Animate workspace columns
-    gsap.utils.toArray('.ce-workspace-left, .ce-workspace-right').forEach((col) => {
-      gsap.fromTo(col,
-        { opacity: 0, y: 50 },
+    // Animate workspace sections individually so they trigger when they enter view
+    const workspaceSections = ['.ce-workspace-left', '.ce-workspace-right', '.ce-workspace-middle'];
+    workspaceSections.forEach((selector) => {
+      gsap.fromTo(selector,
+        { opacity: 0, y: 40 },
         { 
           opacity: 1, 
           y: 0,
-          ease: "power2.in",
+          ease: "power2.out",
           scrollTrigger: {
-            trigger: col,
+            trigger: selector,
             start: "top 85%",
             end: "top 60%",
             scrub: 1.5
@@ -88,6 +58,39 @@ export default function ComplianceEngine() {
         }
       );
     });
+
+    // Animate stats intro
+    gsap.fromTo('.ce-stats-left',
+      { opacity: 0, x: -40 },
+      {
+        opacity: 1,
+        x: 0,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: '.ce-stats-container',
+          start: "top 85%",
+          end: "top 60%",
+          scrub: 1.5
+        }
+      }
+    );
+
+    // Group the stats rows into a single ScrollTrigger to prevent lag when height changes
+    gsap.fromTo('.ce-stat-row',
+      { opacity: 0, y: 30 },
+      {
+        opacity: 1,
+        y: 0,
+        stagger: 0.15,
+        duration: 0.8,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: '.ce-stats-list',
+          start: "top 90%",
+          toggleActions: "play none none none"
+        }
+      }
+    );
   }, { scope: containerRef });
 
   return (
@@ -107,7 +110,7 @@ export default function ComplianceEngine() {
         <ul className="nav-links">
           <li><Link to="/">Overview</Link></li>
           <li><Link to="/compliance-engine">Compliance Engine</Link></li>
-          <li><a href="#">Vision Engine</a></li>
+          <li><Link to="/vision-engine">Vision Engine</Link></li>
           <li><a href="#">Forsight Engine</a></li>
           <li><a href="#">Team</a></li>
         </ul>
@@ -125,7 +128,7 @@ export default function ComplianceEngine() {
           playsInline
         />
         <div className="ce-hero-content">
-          <div style={{ position: 'relative', width: '80%', height: '300px', zIndex: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ position: 'relative', width: '97%', height: '300px', zIndex: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <TextPressure
               text="COMPLIANCE ENGINE"
               flex={true}
@@ -139,82 +142,106 @@ export default function ComplianceEngine() {
               minFontSize={36}
             />
           </div>
+
+          {/* Bottom Left Text Block */}
+          <div className="bottom-left-info">
+            <p>AI-Powered Site Inspections That<br />Catch Defects Before They Cost You</p>
+          </div>
         </div>
       </div>
 
       <section className="ce-workspace-section">
-        <div className="ce-workspace">
-        <div className="ce-workspace-left">
-          <h2 className="ce-section-title">1. Select Building Codes</h2>
-          <div className="ce-code-toggles">
-            <button className="ce-code-btn ce-code-btn-active">✓ NBC 2016 Part IV (Fire & Life Safety)</button>
-            <button className="ce-code-btn ce-code-btn-active">✓ IS 456:2000 (Reinforced Concrete)</button>
+        <div className="ce-workspace-top">
+          <div className="ce-workspace-left">
+            <h2 className="ce-section-title">1. Select Building Codes</h2>
+            <div className="ce-code-toggles">
+              <button className="ce-code-btn ce-code-btn-active">NBC 2016 Part IV (Fire & Life Safety)</button>
+              <button className="ce-code-btn ce-code-btn-active">IS 456:2000 (Reinforced Concrete)</button>
+            </div>
           </div>
 
-          <h2 className="ce-section-title ce-mt-4">2. Upload Floor Plan / Blueprint</h2>
+          <div className="ce-workspace-right">
+            <h2 className="ce-section-title">Identified Violations</h2>
+            <div className="ce-empty-state">
+              <span className="ce-empty-title">No Violations Detected Yet</span>
+              <span className="ce-empty-sub">Upload an architectural layout to start compliance verification.</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="ce-workspace-middle">
+          <h2 className="ce-section-title" style={{ textAlign: 'center' }}>2. Upload Floor Plan / Blueprint</h2>
           <div className="ce-dropzone">
             <span className="ce-dropzone-text">Drop blueprint here or click to upload</span>
             <span className="ce-dropzone-sub">Supports PDF, PNG, JPG (architectural layouts, floor plans)</span>
           </div>
         </div>
-
-        <div className="ce-workspace-right">
-          <h2 className="ce-section-title">Identified Violations</h2>
-          <div className="ce-empty-state">
-            <span className="ce-empty-title">No Violations Detected Yet</span>
-            <span className="ce-empty-sub">Upload an architectural layout to start compliance verification.</span>
-          </div>
-        </div>
-        </div>
       </section>
 
       <div className="ce-stats-section">
-        <div className="ce-zigzag-blocks">
+        <div className="ce-stats-container">
+          <div className="ce-stats-left">
+            <h2 className="ce-stats-heading">Live Compliance<br/>Metrics</h2>
+            <p className="ce-stats-subtext">Real-time verification against design standards, structural integrity, and timeline probabilities.</p>
+          </div>
           
-          {/* Row 1: Text Left, Value Right */}
-          <div className="ce-zigzag-block">
-            <div className="ce-zigzag-text">
-              <span className="ce-zigzag-eyebrow">Composite Health <span className="ce-pill ce-pill-green ce-pill-small" style={{marginLeft: '1rem'}}>Pass</span></span>
-              <p className="ce-zigzag-body">Across all 3 layers</p>
-            </div>
-            <div className="ce-zigzag-value-container">
-              <span className="ce-zigzag-value">100</span>
+          <div className="ce-stats-right">
+            <div className="ce-stats-list">
+
+              <div className={`ce-stat-row ${openStat === 0 ? 'is-open' : ''}`}>
+                <div className="ce-stat-row-header" onClick={() => toggleStat(0)}>
+                  <span className="ce-stat-title">Composite Health</span>
+                  <span className="ce-stat-toggle">+</span>
+                </div>
+                <div className="ce-stat-expand">
+                  <div className="ce-stat-expand-inner">
+                    <p>{statDetails[0]}</p>
+                    <div className="ce-stat-minimal-value">Score: 100 (Pass)</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className={`ce-stat-row ${openStat === 1 ? 'is-open' : ''}`}>
+                <div className="ce-stat-row-header" onClick={() => toggleStat(1)}>
+                  <span className="ce-stat-title">Design Flaws</span>
+                  <span className="ce-stat-toggle">+</span>
+                </div>
+                <div className="ce-stat-expand">
+                  <div className="ce-stat-expand-inner">
+                    <p>{statDetails[1]}</p>
+                    <div className="ce-stat-minimal-value">Detected: 0</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className={`ce-stat-row ${openStat === 2 ? 'is-open' : ''}`}>
+                <div className="ce-stat-row-header" onClick={() => toggleStat(2)}>
+                  <span className="ce-stat-title">As-Built Defects</span>
+                  <span className="ce-stat-toggle">+</span>
+                </div>
+                <div className="ce-stat-expand">
+                  <div className="ce-stat-expand-inner">
+                    <p>{statDetails[2]}</p>
+                    <div className="ce-stat-minimal-value">Detected: 0</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className={`ce-stat-row ${openStat === 3 ? 'is-open' : ''}`}>
+                <div className="ce-stat-row-header" onClick={() => toggleStat(3)}>
+                  <span className="ce-stat-title">On-Time Probability</span>
+                  <span className="ce-stat-toggle">+</span>
+                </div>
+                <div className="ce-stat-expand">
+                  <div className="ce-stat-expand-inner">
+                    <p>{statDetails[3]}</p>
+                    <div className="ce-stat-minimal-value">Status: Pending</div>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
-
-          {/* Row 2: Value Left, Text Right */}
-          <div className="ce-zigzag-block">
-            <div className="ce-zigzag-value-container">
-              <span className="ce-zigzag-value">0</span>
-            </div>
-            <div className="ce-zigzag-text">
-              <span className="ce-zigzag-eyebrow">Design Flaws <span className="ce-pill ce-pill-dark ce-pill-small" style={{marginLeft: '1rem'}}>Layer 1</span></span>
-              <p className="ce-zigzag-body">Blueprint check</p>
-            </div>
-          </div>
-
-          {/* Row 3: Text Left, Value Right */}
-          <div className="ce-zigzag-block">
-            <div className="ce-zigzag-text">
-              <span className="ce-zigzag-eyebrow">As-Built Defects <span className="ce-pill ce-pill-dark ce-pill-small" style={{marginLeft: '1rem'}}>Layer 2</span></span>
-              <p className="ce-zigzag-body">Site inspection</p>
-            </div>
-            <div className="ce-zigzag-value-container">
-              <span className="ce-zigzag-value">0</span>
-            </div>
-          </div>
-
-          {/* Row 4: Value Left, Text Right */}
-          <div className="ce-zigzag-block">
-            <div className="ce-zigzag-value-container">
-              <span className="ce-zigzag-value">—</span>
-            </div>
-            <div className="ce-zigzag-text">
-              <span className="ce-zigzag-eyebrow">On-Time Probability <span className="ce-pill ce-pill-dark ce-pill-small" style={{marginLeft: '1rem'}}>Layer 3</span></span>
-              <p className="ce-zigzag-body">10,000x simulation</p>
-            </div>
-          </div>
-
         </div>
       </div>
     </div>

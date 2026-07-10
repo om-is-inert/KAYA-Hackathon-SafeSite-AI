@@ -63,7 +63,7 @@
   font-family: 'JetBrains Mono', monospace;
   font-size: 1.25rem;
   font-weight: 500;
-  color: #5A45FF;
+  color: #111111;
   vertical-align: super;
   margin-left: 0.25rem;
   line-height: 0;
@@ -84,7 +84,7 @@
 }
 
 .menu-item:hover .menu-text {
-  color: #5A45FF;
+  color: #666666;
   text-decoration: none;
 }
 
@@ -97,7 +97,7 @@
   display: block;
   font-size: 0.9rem;
   font-weight: 500;
-  color: #5A45FF;
+  color: #666666;
   margin-bottom: 1.2rem;
 }
 
@@ -116,7 +116,7 @@
 }
 
 .footer-links a:hover {
-  color: #5A45FF;
+  color: #666666;
 }
 
 /* Close button on menu panel for better UX */
