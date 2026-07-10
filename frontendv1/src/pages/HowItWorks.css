@@ -1,0 +1,152 @@
+.hiw-page {
+  background-color: #FFFFFF;
+  color: #111;
+  min-height: 100vh;
+}
+
+/* Intro Section */
+.hiw-intro-section {
+  padding: 160px 4rem 100px 4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: 2rem;
+}
+
+.hiw-intro-text {
+  max-width: 800px;
+  margin-top: 4rem;
+}
+
+.hiw-intro-text p {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.5rem;
+  line-height: 1.5;
+  color: #444;
+  margin: 0;
+  font-weight: 400;
+}
+
+/* Process Section */
+.hiw-process-section {
+  padding: 0 4rem 140px 4rem;
+  display: flex;
+  justify-content: center;
+}
+
+.hiw-container {
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  flex-direction: column;
+}
+
+.hiw-block {
+  padding: 4rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.hiw-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: #666;
+  margin-bottom: 2rem;
+}
+
+.hiw-flow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111;
+  margin-bottom: 1.5rem;
+}
+
+.hiw-arrow {
+  color: #999;
+  font-weight: 400;
+}
+
+.hiw-desc {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #444;
+  margin: 0;
+  max-width: 700px;
+}
+
+.hiw-divider {
+  width: 100%;
+  height: 1px;
+  background-color: #EAEAEA;
+}
+
+/* Closing Section */
+.hiw-closing-section {
+  background: #FAFAFA;
+  padding: 8rem 4rem;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+}
+
+.hiw-closing-content {
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hiw-closing-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: #666;
+  margin: 0 0 1.5rem 0;
+}
+
+.hiw-closing-statement {
+  font-family: 'Inter', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #111;
+  letter-spacing: -0.02em;
+  margin: 0 0 2.5rem 0;
+}
+
+@media (max-width: 768px) {
+  .hiw-intro-section {
+    padding: 140px 2rem 40px 2rem;
+  }
+  .hiw-process-section {
+    padding: 20px 2rem 100px 2rem;
+  }
+  .hiw-intro-text p {
+    font-size: 1.2rem;
+  }
+  .hiw-flow {
+    font-size: 1.1rem;
+    gap: 1rem;
+  }
+  .hiw-closing-section {
+    padding: 5rem 2rem;
+  }
+  .hiw-closing-statement {
+    font-size: 1.8rem;
+  }
+}

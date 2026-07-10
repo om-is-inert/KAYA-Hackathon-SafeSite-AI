@@ -38,7 +38,8 @@ export default function TopNav() {
         <Link to="/compliance-engine" className={location.pathname.startsWith('/compliance-engine') ? 'active' : ''}>Compliance Engine</Link>
         <Link to="/vision-engine" className={location.pathname.startsWith('/vision-engine') ? 'active' : ''}>Vision Engine</Link>
         <Link to="/foresight-engine" className={location.pathname.startsWith('/foresight-engine') ? 'active' : ''}>Foresight Engine</Link>
-        <Link to="#">Team</Link>
+        <Link to="/how-it-works" className={location.pathname.startsWith('/how-it-works') ? 'active' : ''}>Process</Link>
+        <Link to="/team" className={location.pathname.startsWith('/team') ? 'active' : ''}>Team</Link>
       </div>
 
       <div className="top-nav-cta">

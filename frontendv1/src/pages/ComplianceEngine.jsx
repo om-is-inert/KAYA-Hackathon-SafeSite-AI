@@ -235,7 +235,7 @@ export default function ComplianceEngine() {
           <h3 style={{ fontSize: '2.2rem', fontWeight: 600, lineHeight: 1.3, color: '#111', letterSpacing: '-0.02em', margin: '0 0 2.5rem 0' }}>
             Automatically checks site plans against building codes and safety regulations — catching violations before inspectors do.
           </h3>
-          <a href="#" className="nav-cta cta-large">See How It Works</a>
+          <Link to="/how-it-works" className="nav-cta cta-large">See How It Works</Link>
         </div>
       </section>
     </div>

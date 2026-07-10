@@ -39,7 +39,8 @@ const TextPressure = ({
   strokeColor = '#FF0000',
   className = '',
 
-  minFontSize = 24
+  minFontSize = 24,
+  sizeFactor = 2
 }) => {
   const containerRef = useRef(null);
   const titleRef = useRef(null);
@@ -71,7 +72,7 @@ const TextPressure = ({
 
     const { width: containerW, height: containerH } = containerRef.current.getBoundingClientRect();
 
-    let newFontSize = containerW / (chars.length / 2);
+    let newFontSize = containerW / (chars.length / sizeFactor);
     newFontSize = Math.max(newFontSize, minFontSize);
 
     setFontSize(newFontSize);

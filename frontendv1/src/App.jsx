@@ -5,6 +5,8 @@ import Home from './pages/Home';
 import ComplianceEngine from './pages/ComplianceEngine';
 import VisionEngine from './pages/VisionEngine';
 import ForesightEngine from './pages/ForesightEngine';
+import HowItWorks from './pages/HowItWorks';
+import Team from './pages/Team';
 import TopNav from './components/TopNav';
 
 function ScrollToTop() {
@@ -34,6 +36,8 @@ function App() {
         <Route path="/compliance-engine" element={<ComplianceEngine />} />
         <Route path="/vision-engine" element={<VisionEngine />} />
         <Route path="/foresight-engine" element={<ForesightEngine />} />
+        <Route path="/how-it-works" element={<HowItWorks />} />
+        <Route path="/team" element={<Team />} />
       </Routes>
     </Router>
   );

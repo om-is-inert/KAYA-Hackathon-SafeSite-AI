@@ -1,0 +1,144 @@
+.team-page {
+  background-color: #FFFFFF;
+  color: #111;
+  min-height: 100vh;
+}
+
+/* Intro Section */
+.team-intro-section {
+  padding: 160px 4rem 100px 4rem; /* massive padding */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: 2rem;
+}
+
+/* Grid Section */
+.team-grid-section {
+  padding: 0 4rem 140px 4rem;
+  display: flex;
+  justify-content: center;
+}
+
+.team-grid-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8rem 12rem; /* massive vertical and horizontal gap */
+  width: 100%;
+  max-width: 900px;
+  text-align: center;
+  margin: 0 auto;
+}
+
+.team-grid-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.team-grid-name {
+  font-family: 'Inter', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #111;
+  letter-spacing: 0.05em;
+}
+
+.team-social-icons {
+  display: flex;
+  gap: 1.25rem;
+  align-items: center;
+}
+
+.team-social-icons a {
+  color: #888;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.team-social-icons a:hover {
+  color: #111;
+  transform: translateY(-2px);
+}
+
+.team-social-icons a:hover {
+  color: #111;
+  transform: translateY(-2px);
+}
+
+.team-tagline-container {
+  text-align: center;
+  width: 100%;
+}
+
+.team-tagline {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: #666;
+}
+
+/* Closing Section */
+.team-closing-section {
+  background: #FAFAFA;
+  padding: 8rem 4rem;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+}
+
+.team-closing-content {
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.team-closing-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: #666;
+  margin: 0 0 1.5rem 0;
+}
+
+.team-closing-statement {
+  font-family: 'Inter', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #111;
+  letter-spacing: -0.02em;
+  margin: 0 0 2.5rem 0;
+}
+
+@media (max-width: 768px) {
+  .team-intro-section {
+    padding: 140px 2rem 40px 2rem;
+  }
+  .team-grid-section {
+    padding: 20px 2rem 100px 2rem;
+  }
+  .team-grid-container {
+    grid-template-columns: 1fr;
+    gap: 4rem;
+  }
+  .team-title {
+    font-size: 3.5rem;
+  }
+  .team-closing-section {
+    padding: 5rem 2rem;
+  }
+  .team-closing-statement {
+    font-size: 1.8rem;
+  }
+}
