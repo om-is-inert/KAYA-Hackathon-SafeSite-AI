@@ -171,8 +171,7 @@ function Home() {
         </div>
       </section>
       
-      {/* Dummy scrollable space to allow scrolling past the overview */}
-      <div style={{ height: '150vh', background: '#FAFAFA' }}></div>
+      {/* Dummy scrollable space removed to avoid empty whitespace */}
     </div>
   );
 }

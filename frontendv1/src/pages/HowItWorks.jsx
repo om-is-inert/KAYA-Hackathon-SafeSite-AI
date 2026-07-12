@@ -122,7 +122,7 @@ export default function HowItWorks() {
           <h3 className="hiw-closing-statement">
             Ready to deploy SafeSite AI on your next project?
           </h3>
-          <Link to="#" className="nav-cta cta-large">Contact Us</Link>
+          <a href="https://mail.google.com/mail/?view=cm&fs=1&to=24f3005310@ds.study.iitm.ac.in" className="nav-cta cta-large" target="_blank" rel="noopener noreferrer">Contact Us</a>
         </div>
       </section>
     </div>

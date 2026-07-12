@@ -43,7 +43,7 @@ export default function TopNav() {
       </div>
 
       <div className="top-nav-cta">
-        <a href="#" className="contact-btn">Get in Touch</a>
+        <a href="https://mail.google.com/mail/?view=cm&fs=1&to=24f3005310@ds.study.iitm.ac.in" className="contact-btn" target="_blank" rel="noopener noreferrer">Get in Touch</a>
       </div>
     </nav>
   );
