@@ -125,7 +125,7 @@ function Home() {
               <h3 className="statement-text">
                 Before the first beam goes up, SafeSite AI reviews your site plans and flags defects that would otherwise surface mid-build — when they're far more expensive to fix.
               </h3>
-              <Link to="/compliance-engine" className="nav-cta cta-large">See How It Works</Link>
+              <Link to="/how-it-works" className="nav-cta cta-large">See How It Works</Link>
             </div>
           </div>
           <div className="feature-blocks">
