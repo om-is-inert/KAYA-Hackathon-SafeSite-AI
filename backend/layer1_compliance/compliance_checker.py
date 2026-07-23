@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 import uuid
 
 import google.generativeai as genai
@@ -17,6 +18,43 @@ from backend.models import ComplianceResult, Severity, SpatialElement, Violation
 
 logger = logging.getLogger(__name__)
 genai.configure(api_key=GEMINI_API_KEY)
+
+
+def _repair_json(text: str) -> str:
+    """Best-effort repair of common Gemini JSON issues."""
+    text = re.sub(r'(\d)\\"', r"\1 in", text)
+    text = re.sub(r'(\d)"(?=[^:,\s\}\]])', r"\1 in", text)
+    open_braces = text.count("{") - text.count("}")
+    open_brackets = text.count("[") - text.count("]")
+    if open_braces > 0 or open_brackets > 0:
+        text = re.sub(r',\s*"[^"]*$', "", text)
+        text = re.sub(r",\s*$", "", text)
+        text += "]" * max(open_brackets, 0)
+        text += "}" * max(open_braces, 0)
+    return text
+
+
+def _parse_gemini_json(raw_text: str) -> dict:
+    """Multi-pass JSON parser with repair for Gemini responses."""
+    cleaned = raw_text.strip()
+    cleaned = re.sub(r"^```json\s*|^```\s*|```$", "", cleaned, flags=re.MULTILINE).strip()
+
+    for text in [cleaned, _repair_json(cleaned)]:
+        try:
+            return json.loads(text)
+        except json.JSONDecodeError:
+            pass
+
+    m = re.search(r"\{.*\}", cleaned, re.DOTALL)
+    if m:
+        try:
+            return json.loads(_repair_json(m.group()))
+        except json.JSONDecodeError:
+            pass
+
+    logger.error("All JSON parse attempts failed. Raw:\n%s", raw_text[:2000])
+    return {"violations": [], "compliance_score": 0}
+
 
 COMPLIANCE_CHECK_PROMPT = (
     "You are a senior building compliance auditor AI. You have:\n"
@@ -84,12 +122,7 @@ async def check_compliance(
         lines = raw_text.split("\n")
         raw_text = "\n".join(lines[1:-1]) if lines[-1].strip() == "```" else "\n".join(lines[1:])
 
-    try:
-        result_data = json.loads(raw_text)
-    except json.JSONDecodeError:
-        import re
-        m = re.search(r"\{.*\}", raw_text, re.DOTALL)
-        result_data = json.loads(m.group()) if m else {"violations": [], "compliance_score": 0}
+    result_data = _parse_gemini_json(raw_text)
 
     violations = []
     for v in result_data.get("violations", []):

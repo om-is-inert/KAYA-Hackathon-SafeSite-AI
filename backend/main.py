@@ -90,16 +90,11 @@ async def analyze_compliance(
     else:
         spatial_data = extract_spatial_data(image_path=save_path)
 
-    # Step 2: RAG retrieval
+    # Step 2: RAG retrieval — build queries from what was actually extracted
     kb = get_knowledge_base()
-    queries = [
-        "minimum corridor width fire escape",
-        "exit door swing direction requirements",
-        "staircase width requirements",
-        "room ventilation window area requirements",
-        "structural column spacing requirements",
-        "fire safety exit count requirements",
-    ]
+    from backend.layer1_compliance.knowledge_base import build_query_from_spatial_data
+    dynamic_query = build_query_from_spatial_data(spatial_data)
+    queries = [q.strip() for q in dynamic_query.split(";") if q.strip()]
     rag_results = []
     for q in queries:
         rag_results.extend(kb.query(q, n_results=3))

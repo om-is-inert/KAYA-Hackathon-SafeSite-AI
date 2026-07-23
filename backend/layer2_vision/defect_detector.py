@@ -9,6 +9,7 @@ from __future__ import annotations
 import base64
 import json
 import logging
+import re
 import uuid
 from pathlib import Path
 
@@ -19,6 +20,39 @@ from backend.models import Defect, DefectReport, DefectType, Severity
 
 logger = logging.getLogger(__name__)
 genai.configure(api_key=GEMINI_API_KEY)
+
+
+def _repair_json(text: str) -> str:
+    """Best-effort repair of common Gemini JSON issues."""
+    text = re.sub(r'(\d)\\"', r"\1 in", text)
+    text = re.sub(r'(\d)"(?=[^:,\s\}\]])', r"\1 in", text)
+    open_braces = text.count("{") - text.count("}")
+    open_brackets = text.count("[") - text.count("]")
+    if open_braces > 0 or open_brackets > 0:
+        text = re.sub(r',\s*"[^"]*$', "", text)
+        text = re.sub(r",\s*$", "", text)
+        text += "]" * max(open_brackets, 0)
+        text += "}" * max(open_braces, 0)
+    return text
+
+
+def _parse_gemini_json(raw_text: str) -> dict:
+    """Multi-pass JSON parser with repair for Gemini responses."""
+    cleaned = raw_text.strip()
+    cleaned = re.sub(r"^```json\s*|^```\s*|```$", "", cleaned, flags=re.MULTILINE).strip()
+    for text in [cleaned, _repair_json(cleaned)]:
+        try:
+            return json.loads(text)
+        except json.JSONDecodeError:
+            pass
+    m = re.search(r"\{.*\}", cleaned, re.DOTALL)
+    if m:
+        try:
+            return json.loads(_repair_json(m.group()))
+        except json.JSONDecodeError:
+            pass
+    logger.error("All JSON parse attempts failed. Raw:\n%s", raw_text[:2000])
+    return {"defects": [], "overall_condition": "Unknown"}
 
 DEFECT_DETECTION_PROMPT = """You are a construction defect detection AI specialist.
 Analyze this construction site photo and identify ALL visible defects.
@@ -80,25 +114,7 @@ async def detect_defects(
         generation_config=genai.GenerationConfig(temperature=0.1, max_output_tokens=8192, response_mime_type="application/json"),
     )
 
-    raw = response.text.strip()
-    if raw.startswith("```"):
-        lines = raw.split("\n")
-        raw = "\n".join(lines[1:-1]) if lines[-1].strip() == "```" else "\n".join(lines[1:])
-
-    try:
-        result = json.loads(raw)
-    except json.JSONDecodeError:
-        import re
-        m = re.search(r"\{.*\}", raw, re.DOTALL)
-        if m:
-            try:
-                result = json.loads(m.group())
-            except json.JSONDecodeError:
-                logger.error("Gemini response was truncated/unparseable, likely token limit. Raw response: %s", raw[:500])
-                raise
-        else:
-            logger.error("Gemini response was truncated/unparseable, likely token limit. Raw response: %s", raw[:500])
-            raise
+    result = _parse_gemini_json(response.text)
 
     defects = []
     for d in result.get("defects", []):

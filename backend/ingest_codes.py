@@ -19,4 +19,6 @@ if __name__ == "__main__":
 
     # quick sanity check
     print("\n--- Sanity check retrieval ---")
-    print(retrieve_relevant_codes("minimum hallway width for fire escape corridor", top_k=2))
+    results = retrieve_relevant_codes("minimum hallway width for fire escape corridor", top_k=2)
+    # Encode to ASCII to avoid Windows cp1252 errors from PDF Unicode chars
+    print(results.encode("ascii", errors="replace").decode("ascii"))

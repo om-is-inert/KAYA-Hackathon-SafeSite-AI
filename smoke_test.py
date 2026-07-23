@@ -31,13 +31,16 @@ async def main():
     print("\n" + "=" * 60)
     print("STEP 2: Layer 1 - RAG retrieval (requires codes already ingested)")
     print("=" * 60)
-    from backend.layer1_compliance.knowledge_base import KnowledgeBase
+    from backend.layer1_compliance.knowledge_base import KnowledgeBase, build_query_from_spatial_data
     from backend import config
     kb = KnowledgeBase(persist_dir=config.CHROMA_PERSIST_DIR)
-    rag_results = kb.query("minimum corridor width fire escape", n_results=3)
+    dynamic_query = build_query_from_spatial_data(spatial_data)
+    queries = [q.strip() for q in dynamic_query.split(";") if q.strip()]
+    print(f"Dynamic queries: {queries}")
+    rag_results = []
+    for q in queries:
+        rag_results.extend(kb.query(q, n_results=3))
     print(f"Retrieved {len(rag_results)} chunks")
-    for r in rag_results[:1]:
-        print(json.dumps(r, indent=2)[:500])
 
     print("\n" + "=" * 60)
     print("STEP 3: Layer 1 - Compliance check")
@@ -64,9 +67,9 @@ async def main():
     print(f"After L2 update -> on_time_probability: {result_after['on_time_probability']}")
 
     if result_before['on_time_probability'] == result_after['on_time_probability']:
-        print("\n⚠️  WARNING: probability did not change after L2 update. Loop may not be wired correctly.")
+        print("\n[WARNING] probability did not change after L2 update. Loop may not be wired correctly.")
     else:
-        print("\n✅ Feedback loop confirmed: L3 recalculated after new input.")
+        print("\n[OK] Feedback loop confirmed: L3 recalculated after new input.")
 
     print("\n" + "=" * 60)
     print("ALL STEPS COMPLETED - pipeline is working end to end")
