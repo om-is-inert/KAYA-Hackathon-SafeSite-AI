@@ -27,7 +27,7 @@ The results below demonstrate this loop is not just architected but functionally
 - RAG retrieval correctly surfaced the relevant code section for the query — NBC 2016 Part IV §4.4.2.4.3 (Staircases) and central corridor/exit provisions — from a full-length regulatory PDF, not a curated snippet
 - Automated cross-reference correctly flagged violations against retrieved code text with severity grading and citations
 
-**Result:** 2 violations identified · Compliance score: 65/100
+**Result:** 4 violations identified · Compliance score: 70/100
 
 ---
 
@@ -65,10 +65,10 @@ The results below demonstrate this loop is not just architected but functionally
 | System state | On-time completion probability |
 |---|---|
 | Baseline (no findings yet) | 100% |
-| After Layer 1 compliance scan (2 violations) | **93.7%** |
-| After Layer 2 defect scan (+3 defects, incl. 2 critical) | **2.7%** |
+| After Layer 1 compliance scan (4 violations) | **89.6%** |
+| After Layer 2 defect scan (+3 defects) | **1.5%** |
 
-The probability recalculated automatically and correctly in response to new input from upstream layers — without any manual trigger or page refresh — confirming the feedback loop is functionally real, not a static diagram.
+The probability recalculated automatically and correctly in response to new input from upstream layers — without any manual trigger or page refresh — confirming the feedback loop is functionally real, not a static diagram. The Monte Carlo simulation is fully stochastic to simulate real-world variance, but can be pinned via `DEMO_SEED=42` in `.env` for repeatable pitch demonstrations.
 
 ---
 

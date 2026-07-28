@@ -16,7 +16,7 @@ from backend.models import (
     PPEReport, BD3ClassificationReport, ScanToBIMReport,
 )
 from backend.layer3_foresight.risk_modeler import run_monte_carlo
-from backend.layer3_foresight.cost_optimizer import optimize_resources
+from backend.layer3_foresight.resource_optimizer import optimize_resources
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +64,7 @@ class FeedbackLoop:
         """L2 → L3: SH17 PPE safety audits feed into risk model."""
         if isinstance(report, dict):
             # Parse dict into PPEReport if needed or store metadata
-            self.ppe_report = PPEReport(**{k: v for k, v in report.items() if k in PPEReport.__fields__}) if hasattr(PPEReport, "__fields__") else report
+            self.ppe_report = PPEReport(**{k: v for k, v in report.items() if k in PPEReport.model_fields}) if hasattr(PPEReport, "model_fields") else report
         else:
             self.ppe_report = report
         self._active = True

@@ -87,6 +87,7 @@ graph TB
 | Risk Modeling | Monte Carlo / Bayesian Belief Network |
 | Optimization | SciPy `milp` / Gurobi |
 | Reports | fpdf2 |
+| Resiliency | Gemini Free-Tier Rate Limit Retries, Multi-pass JSON Repair Utility |
 
 ---
 
@@ -153,6 +154,7 @@ Create `backend/.env`:
 GEMINI_API_KEY=your_google_ai_studio_key_here
 CHROMA_PERSIST_DIR=./data/chroma_db
 EMBEDDING_MODEL=BAAI/bge-large-en-v1.5
+DEMO_SEED=42 # Optional: Set to pin the Monte Carlo RNG for reproducible demo numbers
 ```
 
 ### Run

@@ -45,7 +45,7 @@ app.add_middleware(
 )
 
 # Serve frontend
-frontend_dir = Path(__file__).resolve().parent.parent / "frontend"
+frontend_dir = Path(__file__).resolve().parent.parent / "frontendv1"
 if frontend_dir.exists():
     app.mount("/static", StaticFiles(directory=str(frontend_dir), html=True), name="static")
 
@@ -106,7 +106,7 @@ async def analyze_compliance(
     result.blueprint_filename = filename
 
     # Feed into shared state + feedback loop
-    SHARED_STATE["violations"] = [v.dict() if hasattr(v, "dict") else v for v in result.violations]
+    SHARED_STATE["violations"] = [v.model_dump() if hasattr(v, "model_dump") else v for v in result.violations]
     feedback_loop.update_compliance(result)
 
     return result
@@ -236,7 +236,7 @@ async def run_risk_simulation(
 @app.post("/api/v1/foresight/optimize")
 async def run_optimization():
     """Run MILP resource optimization."""
-    from backend.layer3_foresight.cost_optimizer import optimize_resources
+    from backend.layer3_foresight.resource_optimizer import optimize_resources
     rework = []
     if feedback_loop.defect_report:
         from backend.models import Severity

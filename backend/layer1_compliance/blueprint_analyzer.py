@@ -17,6 +17,7 @@ from PIL import Image
 
 from backend import config
 from backend.config import GEMINI_API_KEY, VLM_MODEL
+from backend.gemini_schemas import SPATIAL_EXTRACTION_SCHEMA, COMPLIANCE_CHECK_SCHEMA
 
 logger = logging.getLogger(__name__)
 
@@ -99,58 +100,12 @@ Return ONLY valid JSON, no markdown, no commentary, in this exact structure:
 """
 
 
-def _repair_json(text: str) -> str:
-    """Best-effort repair of common Gemini JSON issues (unescaped quotes in
-    measurement values like  2'-4"  and truncated responses)."""
-    # Fix unescaped double-quotes inside string values.
-    # Pattern: find strings that contain an unescaped " mid-value
-    # e.g.  "width": "2'-4""  ->  "width": "2'-4\""
-    # We do this by replacing inch-mark patterns with a safe placeholder,
-    # then swapping back after parse.
-    text = re.sub(r'(\d)\\"', r"\1 in", text)   # already-escaped \" -> in
-    text = re.sub(r"(\d)\"(?=[^:,\s\}\]])", r"\1 in", text)  # bare " after digit
-
-    # If the response was truncated, try to close open braces/brackets
-    open_braces = text.count("{") - text.count("}")
-    open_brackets = text.count("[") - text.count("]")
-    if open_braces > 0 or open_brackets > 0:
-        # Strip any trailing partial key/value
-        text = re.sub(r',\s*"[^"]*$', "", text)
-        text = re.sub(r",\s*$", "", text)
-        text += "]" * max(open_brackets, 0)
-        text += "}" * max(open_braces, 0)
-    return text
+from backend.json_utils import parse_gemini_json
 
 
 def _extract_json(raw_text: str) -> dict[str, Any]:
-    """Strip markdown code fences if present and decode JSON."""
-    cleaned = raw_text.strip()
-    cleaned = re.sub(r"^```json\s*|^```\s*|```$", "", cleaned, flags=re.MULTILINE).strip()
-
-    # First pass: try as-is
-    try:
-        return json.loads(cleaned)
-    except json.JSONDecodeError:
-        pass
-
-    # Second pass: try to repair common Gemini quirks
-    repaired = _repair_json(cleaned)
-    try:
-        return json.loads(repaired)
-    except json.JSONDecodeError:
-        pass
-
-    # Third pass: extract the outermost { ... } and repair that
-    json_match = re.search(r"\{.*\}", cleaned, re.DOTALL)
-    if json_match:
-        fragment = _repair_json(json_match.group())
-        try:
-            return json.loads(fragment)
-        except json.JSONDecodeError:
-            pass
-
-    logger.error("All JSON parse attempts failed. Raw response:\n%s", raw_text[:2000])
-    raise ValueError(f"Gemini did not return valid JSON. Raw response:\n{raw_text}")
+    """Parse Gemini JSON response, raising ValueError on failure."""
+    return parse_gemini_json(raw_text)
 
 
 def extract_spatial_data(

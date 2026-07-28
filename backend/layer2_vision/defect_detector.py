@@ -21,38 +21,8 @@ from backend.models import Defect, DefectReport, DefectType, Severity
 logger = logging.getLogger(__name__)
 genai.configure(api_key=GEMINI_API_KEY)
 
-
-def _repair_json(text: str) -> str:
-    """Best-effort repair of common Gemini JSON issues."""
-    text = re.sub(r'(\d)\\"', r"\1 in", text)
-    text = re.sub(r'(\d)"(?=[^:,\s\}\]])', r"\1 in", text)
-    open_braces = text.count("{") - text.count("}")
-    open_brackets = text.count("[") - text.count("]")
-    if open_braces > 0 or open_brackets > 0:
-        text = re.sub(r',\s*"[^"]*$', "", text)
-        text = re.sub(r",\s*$", "", text)
-        text += "]" * max(open_brackets, 0)
-        text += "}" * max(open_braces, 0)
-    return text
-
-
-def _parse_gemini_json(raw_text: str) -> dict:
-    """Multi-pass JSON parser with repair for Gemini responses."""
-    cleaned = raw_text.strip()
-    cleaned = re.sub(r"^```json\s*|^```\s*|```$", "", cleaned, flags=re.MULTILINE).strip()
-    for text in [cleaned, _repair_json(cleaned)]:
-        try:
-            return json.loads(text)
-        except json.JSONDecodeError:
-            pass
-    m = re.search(r"\{.*\}", cleaned, re.DOTALL)
-    if m:
-        try:
-            return json.loads(_repair_json(m.group()))
-        except json.JSONDecodeError:
-            pass
-    logger.error("All JSON parse attempts failed. Raw:\n%s", raw_text[:2000])
-    return {"defects": [], "overall_condition": "Unknown"}
+from backend.json_utils import parse_gemini_json
+from backend.gemini_schemas import DEFECT_DETECTION_SCHEMA
 
 DEFECT_DETECTION_PROMPT = """You are a construction defect detection AI specialist.
 Analyze this construction site photo and identify ALL visible defects.
@@ -109,12 +79,26 @@ async def detect_defects(
     image_part = {"inline_data": {"mime_type": mime_type, "data": base64.b64encode(data).decode()}}
 
     logger.info("Sending site photo to %s for defect detection...", VLM_MODEL)
-    response = await model.generate_content_async(
-        [DEFECT_DETECTION_PROMPT, image_part],
-        generation_config=genai.GenerationConfig(temperature=0.1, max_output_tokens=8192, response_mime_type="application/json"),
-    )
 
-    result = _parse_gemini_json(response.text)
+    import asyncio
+    from google.api_core.exceptions import ResourceExhausted
+
+    for attempt in range(3):
+        try:
+            response = await model.generate_content_async(
+                [DEFECT_DETECTION_PROMPT, image_part],
+                generation_config=genai.GenerationConfig(temperature=0.1, max_output_tokens=8192, response_mime_type="application/json"),
+            )
+            break
+        except ResourceExhausted:
+            if attempt == 2:
+                raise
+            logger.warning(f"Gemini API rate limit hit. Waiting 35 seconds before retry (Attempt {attempt + 1}/3)...")
+            await asyncio.sleep(35)
+
+    result = parse_gemini_json(
+        response.text, fallback={"defects": [], "overall_condition": "Unknown"}
+    )
 
     defects = []
     for d in result.get("defects", []):

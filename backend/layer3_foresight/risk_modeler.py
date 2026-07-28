@@ -10,7 +10,7 @@ from typing import Optional
 
 import numpy as np
 
-from backend.config import MONTE_CARLO_ITERATIONS
+from backend.config import DEMO_SEED, MONTE_CARLO_ITERATIONS
 from backend.models import ForesightReport, RiskScenario
 
 logger = logging.getLogger(__name__)
@@ -29,7 +29,8 @@ def run_monte_carlo(
     """
     Run Monte Carlo simulation to compute probabilistic project outcomes.
     """
-    np.random.seed(42)
+    if DEMO_SEED is not None:
+        np.random.seed(DEMO_SEED)
 
     # Risk factors — each adds delay/cost with some probability
     rework_days_per_violation = np.random.triangular(2, 5, 14, size=iterations)

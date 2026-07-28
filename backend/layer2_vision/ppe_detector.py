@@ -25,6 +25,8 @@ from typing import Optional
 import google.generativeai as genai
 
 from backend.config import GEMINI_API_KEY, VLM_MODEL
+from backend.json_utils import parse_gemini_json
+from backend.gemini_schemas import PPE_DETECTION_SCHEMA
 
 logger = logging.getLogger(__name__)
 genai.configure(api_key=GEMINI_API_KEY)
@@ -147,25 +149,30 @@ async def _detect_ppe_vlm(
                                   "data": base64.b64encode(data).decode()}}
 
     logger.info("Running SH17-guided PPE detection via %s...", VLM_MODEL)
-    response = await model.generate_content_async(
-        [PPE_DETECTION_PROMPT, image_part],
-        generation_config=genai.GenerationConfig(temperature=0.1, max_output_tokens=8192, response_mime_type="application/json"),
-    )
 
-    raw = response.text.strip()
-    if raw.startswith("```"):
-        lines = raw.split("\n")
-        raw = "\n".join(lines[1:-1]) if lines[-1].strip() == "```" else "\n".join(lines[1:])
+    import asyncio
+    from google.api_core.exceptions import ResourceExhausted
 
-    try:
-        result = json.loads(raw)
-    except json.JSONDecodeError:
-        import re
-        m = re.search(r"\{.*\}", raw, re.DOTALL)
-        result = json.loads(m.group()) if m else {
+    for attempt in range(3):
+        try:
+            response = await model.generate_content_async(
+                [PPE_DETECTION_PROMPT, image_part],
+                generation_config=genai.GenerationConfig(temperature=0.1, max_output_tokens=8192, response_mime_type="application/json"),
+            )
+            break
+        except ResourceExhausted:
+            if attempt == 2:
+                raise
+            logger.warning(f"Gemini API rate limit hit. Waiting 35 seconds before retry (Attempt {attempt + 1}/3)...")
+            await asyncio.sleep(35)
+
+    result = parse_gemini_json(
+        response.text,
+        fallback={
             "total_workers": 0, "site_safety_score": 0,
             "workers": [], "site_level_violations": []
-        }
+        },
+    )
 
     # Enrich with SH17 metadata
     result["detection_model"] = "gemini-vlm-sh17-guided"

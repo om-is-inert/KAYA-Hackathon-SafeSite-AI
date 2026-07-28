@@ -283,6 +283,8 @@ def build_query_from_spatial_data(spatial_data: dict) -> str:
     rather than a generic search.
     """
     terms = []
+    if spatial_data.get("rooms"):
+        terms.append("minimum room area ventilation window requirements")
     if spatial_data.get("hallways"):
         terms.append("minimum corridor and hallway width fire escape requirements")
     if spatial_data.get("staircases"):
@@ -291,6 +293,8 @@ def build_query_from_spatial_data(spatial_data: dict) -> str:
         terms.append("minimum number of exits and maximum exit travel distance")
     if spatial_data.get("doors"):
         terms.append("exit door swing direction requirements")
+    if spatial_data.get("windows"):
+        terms.append("minimum window opening area ventilation natural lighting requirements")
     if spatial_data.get("structural_elements"):
         terms.append("minimum wall and column thickness structural requirements")
     if not terms:

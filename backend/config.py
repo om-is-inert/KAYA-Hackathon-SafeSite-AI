@@ -58,3 +58,4 @@ DEBUG: bool = os.getenv("DEBUG", "true").lower() == "true"
 
 # ── Layer 3 — Foresight defaults ───────────────────────────────────
 MONTE_CARLO_ITERATIONS: int = int(os.getenv("MONTE_CARLO_ITERATIONS", "10000"))
+DEMO_SEED: int | None = int(os.getenv("DEMO_SEED")) if os.getenv("DEMO_SEED") else None

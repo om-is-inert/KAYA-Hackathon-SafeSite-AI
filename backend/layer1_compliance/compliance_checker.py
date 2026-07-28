@@ -19,41 +19,8 @@ from backend.models import ComplianceResult, Severity, SpatialElement, Violation
 logger = logging.getLogger(__name__)
 genai.configure(api_key=GEMINI_API_KEY)
 
-
-def _repair_json(text: str) -> str:
-    """Best-effort repair of common Gemini JSON issues."""
-    text = re.sub(r'(\d)\\"', r"\1 in", text)
-    text = re.sub(r'(\d)"(?=[^:,\s\}\]])', r"\1 in", text)
-    open_braces = text.count("{") - text.count("}")
-    open_brackets = text.count("[") - text.count("]")
-    if open_braces > 0 or open_brackets > 0:
-        text = re.sub(r',\s*"[^"]*$', "", text)
-        text = re.sub(r",\s*$", "", text)
-        text += "]" * max(open_brackets, 0)
-        text += "}" * max(open_braces, 0)
-    return text
-
-
-def _parse_gemini_json(raw_text: str) -> dict:
-    """Multi-pass JSON parser with repair for Gemini responses."""
-    cleaned = raw_text.strip()
-    cleaned = re.sub(r"^```json\s*|^```\s*|```$", "", cleaned, flags=re.MULTILINE).strip()
-
-    for text in [cleaned, _repair_json(cleaned)]:
-        try:
-            return json.loads(text)
-        except json.JSONDecodeError:
-            pass
-
-    m = re.search(r"\{.*\}", cleaned, re.DOTALL)
-    if m:
-        try:
-            return json.loads(_repair_json(m.group()))
-        except json.JSONDecodeError:
-            pass
-
-    logger.error("All JSON parse attempts failed. Raw:\n%s", raw_text[:2000])
-    return {"violations": [], "compliance_score": 0}
+from backend.json_utils import parse_gemini_json
+from backend.gemini_schemas import COMPLIANCE_CHECK_SCHEMA
 
 
 COMPLIANCE_CHECK_PROMPT = (
@@ -117,12 +84,9 @@ async def check_compliance(
             logger.warning(f"Gemini API rate limit hit. Waiting 35 seconds before retry (Attempt {attempt + 1}/3)...")
             await asyncio.sleep(35)
 
-    raw_text = response.text.strip()
-    if raw_text.startswith("```"):
-        lines = raw_text.split("\n")
-        raw_text = "\n".join(lines[1:-1]) if lines[-1].strip() == "```" else "\n".join(lines[1:])
-
-    result_data = _parse_gemini_json(raw_text)
+    result_data = parse_gemini_json(
+        response.text, fallback={"violations": [], "compliance_score": 0}
+    )
 
     violations = []
     for v in result_data.get("violations", []):
@@ -144,8 +108,8 @@ async def check_compliance(
     elements = []
     for room in spatial_data.get("rooms", []):
         elements.append(SpatialElement(
-            element_type="room", name=room.get("name", "Unknown"),
-            measurements={"length_m": room.get("length_m"), "width_m": room.get("width_m"), "area_sqm": room.get("area_sqm")},
+            element_type="room", name=room.get("label", "Unknown"),
+            measurements={"length": room.get("length"), "width": room.get("width"), "area": room.get("area"), "unit": room.get("unit")},
         ))
 
     crit = sum(1 for v in violations if v.severity == Severity.CRITICAL)
