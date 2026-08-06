@@ -1,0 +1,71 @@
+/* ── Preloader Overlay ──────────────────────────────────────────── */
+
+.preloader-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999999;              /* above everything, including TopNav */
+  background: #0a0a0a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: clip-path;
+}
+
+/* ── Centered content column ───────────────────────────────────── */
+.preloader-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  user-select: none;
+}
+
+/* ── Wordmark ──────────────────────────────────────────────────── */
+.preloader-wordmark {
+  font-family: 'Inter', sans-serif;
+  font-size: 42px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: #fff;
+  animation: preloaderPulse 2s ease-in-out infinite;
+}
+
+@keyframes preloaderPulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
+}
+
+/* ── Subtitle ──────────────────────────────────────────────────── */
+.preloader-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #666;
+}
+
+/* ── Progress bar ──────────────────────────────────────────────── */
+.preloader-track {
+  width: 260px;
+  height: 3px;
+  background: #1f1f1f;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.preloader-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #fff 0%, #aaa 100%);
+  border-radius: 2px;
+  transition: width 0.3s ease-out;
+}
+
+/* ── Percentage counter ────────────────────────────────────────── */
+.preloader-pct {
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  color: #555;
+  letter-spacing: 0.06em;
+}
