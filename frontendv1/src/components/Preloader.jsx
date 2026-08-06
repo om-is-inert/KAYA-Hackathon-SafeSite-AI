@@ -1,18 +1,18 @@
 /**
- * Preloader — full-page loading screen that waits for the current
- * route's hero video (canplaythrough) and critical images (onload)
- * before revealing the page with a smooth clip-path wipe.
+ * Preloader — full-page loading screen that waits for ALL
+ * hero videos (canplaythrough) and critical images (onload) across
+ * the entire site before revealing the app. Once loaded, users can
+ * navigate instantly between pages without seeing a loading screen.
  *
  * Usage: wrap <App /> routes inside <Preloader>.
  *   <Preloader><Routes>...</Routes></Preloader>
  */
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
 import gsap from 'gsap';
 import './Preloader.css';
 
-/* ── Asset manifest per route ────────────────────────────────────── */
+/* ── Global Asset Manifest ───────────────────────────────────────── */
 /* We import the same asset references the pages import so Vite
    resolves identical hashed URLs — no double-download. */
 import heroVideo from '../../Assets/606982_Cities_City_3840x2160.mp4';
@@ -27,49 +27,32 @@ import closingPhotoVE from '../../Assets/pexels-danielellis-11701517.jpg';
 import closingPhotoCE from '../../Assets/pexels-thirdman-8482551.jpg';
 import closingPhotoFE from '../../Assets/pexels-nacho-monge-425000126-31329571.jpg';
 
-const ROUTE_ASSETS = {
-  '/': {
-    videos: [heroVideo],
-    images: [featureImage1, featureImage2, featureImage3],
-  },
-  '/compliance-engine': {
-    videos: [ceHeroVideo],
-    images: [closingPhotoCE],
-  },
-  '/vision-engine': {
-    videos: [veHeroVideo],
-    images: [closingPhotoVE],
-  },
-  '/foresight-engine': {
-    videos: [feHeroVideo],
-    images: [featureImage2, closingPhotoFE],
-  },
-  '/how-it-works': { videos: [], images: [] },
-  '/team': { videos: [], images: [] },
+const GLOBAL_ASSETS = {
+  videos: [heroVideo, ceHeroVideo, veHeroVideo, feHeroVideo],
+  images: [
+    featureImage1, 
+    featureImage2, 
+    featureImage3,
+    closingPhotoVE,
+    closingPhotoCE,
+    closingPhotoFE
+  ],
 };
 
 /* Minimum time the loader is visible (ms) so it doesn't just flash */
 const MIN_DISPLAY_MS = 1200;
 
 export default function Preloader({ children }) {
-  const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
   const overlayRef = useRef(null);
   const startTime = useRef(Date.now());
 
-  /* Reset on route change */
-  useEffect(() => {
-    startTime.current = Date.now();
-    setLoading(true);
-    setProgress(0);
-  }, [location.pathname]);
-
-  /* Preload assets for the current route */
+  /* Preload ALL assets globally on initial mount */
   useEffect(() => {
     if (!loading) return;
 
-    const assets = ROUTE_ASSETS[location.pathname] || { videos: [], images: [] };
+    const assets = GLOBAL_ASSETS;
     const totalCount = assets.videos.length + assets.images.length;
 
     /* Nothing to preload — skip */
@@ -119,8 +102,9 @@ export default function Preloader({ children }) {
       }
     });
 
+    // We only want this to run once on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, location.pathname]);
+  }, []);
 
   const revealPage = useCallback(() => {
     if (!overlayRef.current) {
