@@ -36,7 +36,7 @@ This isn't three separate tools — it's **one system** where every detection in
 ### 🔮 Layer 3 — Foresight Engine (Continuous)
 > *"What will happen next, and what should we do?"*
 
-- **Time-Series Forecasting**: Prophet / XGBoost / TFT for material lead-time and price volatility prediction.
+- **Time-Series Forecasting**: Exponential Smoothing (Current) / Prophet & XGBoost (Planned) for material lead-time and price volatility prediction.
 - **Bayesian Risk Modeling**: Monte Carlo simulation (10,000+ iterations) for probabilistic delay/completion estimates (e.g., *"82% on-time, 14% risk of 3-week delay"*).
 - **MILP Resource Optimization**: SciPy/Gurobi-based re-optimization triggered automatically when Layer 2 flags rework-requiring defects.
 
@@ -83,7 +83,7 @@ graph TB
 | PDF Parsing | PyMuPDF (`fitz`) |
 | Point Cloud | BIM-Net++ (HePIC dataset) |
 | Defect Detection | YOLOv11-seg / SAM 2 |
-| Forecasting | Prophet / XGBoost / TFT |
+| Forecasting | Exponential Smoothing (Current) / Prophet (Planned) |
 | Risk Modeling | Monte Carlo / Bayesian Belief Network |
 | Optimization | SciPy `milp` / Gurobi |
 | Reports | fpdf2 |
@@ -100,7 +100,7 @@ graph TB
 | Point cloud → BIM | HePIC dataset | BIM-Net++ |
 | Concrete defects | CODEBRIM, CONCORDE | YOLOv11-seg / SAM 2 |
 | PPE detection (stretch) | Roboflow Hard Hat Workers | YOLOv8 |
-| Cost forecasting | Kaggle datasets, CIDC indices | Prophet / XGBoost / TFT |
+| Cost forecasting | Kaggle datasets, CIDC indices | Exponential Smoothing (Current) / Prophet (Planned) |
 
 ---
 

@@ -42,7 +42,7 @@ Compliance Engine re-validates against updated constraints
 | **PDF Parsing** | PyMuPDF (`fitz`) |
 | **Point Cloud Segmentation** | BIM-Net++ (pretrained on HePIC dataset) |
 | **Defect Detection** | YOLOv11-seg / SAM 2 (fine-tuned on CODEBRIM + CONCORDE) |
-| **Time-Series** | Prophet / XGBoost / Temporal Fusion Transformer (TFT) |
+| **Time-Series** | Exponential Smoothing (Current) / Prophet & XGBoost (Planned) |
 | **Risk Modeling** | Monte Carlo simulation / Bayesian Belief Network |
 | **Optimization** | SciPy `linprog` / `milp` (or Gurobi if available) |
 | **Reports** | fpdf2 for downloadable PDF reports |
@@ -59,7 +59,7 @@ Compliance Engine re-validates against updated constraints
 | Point cloud → BIM labels | HePIC dataset | BIM-Net++ (pretrained weights available) |
 | Concrete cracks / rust | CODEBRIM, CONCORDE + custom collected | YOLOv11-seg or SAM 2 (fine-tuned) |
 | PPE / safety hazards (stretch) | Roboflow "Hard Hat Workers" / PPE Detection | YOLOv8 (pretrained) |
-| Cost / logistics forecasting | Public construction cost datasets (Kaggle), CIDC Construction Cost Indices | Prophet / XGBoost / TFT |
+| Cost / logistics forecasting | Public construction cost datasets (Kaggle), CIDC Construction Cost Indices | Exponential Smoothing (Current) / Prophet (Planned) |
 
 ---
 
@@ -173,7 +173,7 @@ is.456.2000.pdf ────►                (500 tokens, 100 overlap)
 5. Output: **Updated probability-weighted schedule**, **reallocated resource plan**, **cost variance estimate**
 
 ### Time-Series Forecasting
-- **Models:** Prophet (baseline), XGBoost (feature-rich), Temporal Fusion Transformer (TFT, if data allows)
+- **Models:** Exponential Smoothing (baseline), Prophet (Stage 2), XGBoost (Stage 2)
 - **Targets:** Material lead-time, material price, labor availability, weather impact
 - **Features:** Historical cost data, CIDC Construction Cost Indices, commodity feeds, seasonal patterns
 
@@ -305,7 +305,7 @@ KAYA Hackathon/
 │   │
 │   ├── layer3_foresight/
 │   │   ├── __init__.py
-│   │   ├── forecaster.py            # Prophet / XGBoost / TFT
+│   │   ├── forecaster.py            # Exponential Smoothing / Prophet (Planned)
 │   │   ├── risk_modeler.py          # Monte Carlo / Bayesian
 │   │   └── optimizer.py             # MILP resource optimization
 │   │

@@ -12,16 +12,17 @@ import logging
 import re
 import uuid
 from pathlib import Path
+from typing import Optional
 
 import google.generativeai as genai
 
 from backend.config import GEMINI_API_KEY, VLM_MODEL
 from backend.models import Defect, DefectReport, DefectType, Severity
+from backend.json_utils import parse_gemini_json
 
 logger = logging.getLogger(__name__)
 genai.configure(api_key=GEMINI_API_KEY)
 
-from backend.json_utils import parse_gemini_json
 
 DEFECT_DETECTION_PROMPT = """You are a construction defect detection AI specialist.
 Analyze this construction site photo and identify ALL visible defects.
@@ -57,7 +58,41 @@ Return ONLY valid JSON:
 }"""
 
 
+# ── YOLOv11-seg Class Definitions ──────────────────────────────────
+YOLO_DEFECT_CLASSES = {
+    0: "Concrete Crack",
+    1: "Honeycombing",
+    2: "Exposed/Rusted Rebar",
+    3: "Spalling",
+    4: "Formwork Misalignment",
+    5: "Improper Curing",
+    6: "Other"
+}
+
+YOLO_SEVERITY_MAPPING = {
+    "Concrete Crack": Severity.HIGH,
+    "Honeycombing": Severity.MEDIUM,
+    "Exposed/Rusted Rebar": Severity.CRITICAL,
+    "Spalling": Severity.HIGH,
+    "Formwork Misalignment": Severity.CRITICAL,
+    "Improper Curing": Severity.MEDIUM,
+    "Other": Severity.LOW,
+}
+
+
 async def detect_defects(
+    image_path: str | Path | None = None,
+    image_bytes: bytes | None = None,
+    mime_type: str = "image/jpeg",
+    use_yolo: bool = False,
+) -> DefectReport:
+    """Analyze a site photo for construction defects."""
+    if use_yolo:
+        return await _detect_defects_yolo(image_path, image_bytes, mime_type)
+    return await _detect_defects_vlm(image_path, image_bytes, mime_type)
+
+
+async def _detect_defects_vlm(
     image_path: str | Path | None = None,
     image_bytes: bytes | None = None,
     mime_type: str = "image/jpeg",
@@ -132,4 +167,84 @@ async def detect_defects(
         overall_condition=result.get("overall_condition", "Unknown"),
         estimated_repair_cost=result.get("estimated_repair_cost"),
         estimated_repair_time=result.get("estimated_repair_time"),
+    )
+
+
+async def _detect_defects_yolo(
+    image_path: str | Path | None = None,
+    image_bytes: bytes | None = None,
+    mime_type: str = "image/jpeg",
+) -> DefectReport:
+    """
+    Defect detection via YOLOv11-seg.
+    Requires: pip install ultralytics
+    Weights: Place weights at: backend/weights/defect_yolo11_seg.pt
+    """
+    try:
+        from ultralytics import YOLO
+    except ImportError:
+        logger.warning("ultralytics not installed, falling back to VLM")
+        return await _detect_defects_vlm(image_path, image_bytes, mime_type)
+
+    weights_path = Path(__file__).parent.parent / "weights" / "defect_yolo11_seg.pt"
+    if not weights_path.exists():
+        logger.warning("YOLO defect weights not found at %s, falling back to VLM", weights_path)
+        return await _detect_defects_vlm(image_path, image_bytes, mime_type)
+
+    model = YOLO(str(weights_path))
+
+    # Prepare image
+    if image_bytes:
+        import tempfile
+        tmp = Path(tempfile.mktemp(suffix=".jpg"))
+        tmp.write_bytes(image_bytes)
+        source = str(tmp)
+    elif image_path:
+        source = str(image_path)
+    else:
+        raise ValueError("Provide image_path or image_bytes")
+
+    results = model(source, conf=0.35, iou=0.45, verbose=False)
+
+    defects = []
+    for r in results:
+        for box in r.boxes:
+            cls_id = int(box.cls[0])
+            conf = float(box.conf[0])
+            cls_name = YOLO_DEFECT_CLASSES.get(cls_id, "Other")
+            xyxy = box.xyxyn[0].tolist()  # normalized [x1, y1, x2, y2]
+
+            try:
+                dtype = DefectType(cls_name)
+            except ValueError:
+                dtype = DefectType.OTHER
+                
+            sev = YOLO_SEVERITY_MAPPING.get(cls_name, Severity.MEDIUM)
+
+            defects.append(Defect(
+                id=f"D{uuid.uuid4().hex[:6].upper()}",
+                defect_type=dtype,
+                severity=sev,
+                confidence=conf,
+                location=f"Detected via YOLO bounding box",
+                description=f"Detected {cls_name} with {conf:.2f} confidence",
+                code_reference="IS 456:2000",
+                remediation="Consult structural engineer.",
+                bounding_box={"x": xyxy[0], "y": xyxy[1], "w": xyxy[2] - xyxy[0], "h": xyxy[3] - xyxy[1]},
+            ))
+
+    crit = sum(1 for d in defects if d.severity == Severity.CRITICAL)
+    high = sum(1 for d in defects if d.severity == Severity.HIGH)
+
+    overall_condition = "Poor" if crit > 0 or high > 2 else "Fair"
+    if len(defects) == 0:
+        overall_condition = "Good"
+
+    return DefectReport(
+        image_filename=str(image_path) if image_path else "uploaded_image",
+        total_defects=len(defects), critical_count=crit, high_count=high,
+        defects=defects,
+        overall_condition=overall_condition,
+        estimated_repair_cost="Requires manual review",
+        estimated_repair_time="Requires manual review",
     )
