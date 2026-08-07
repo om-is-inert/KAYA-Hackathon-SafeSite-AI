@@ -30,12 +30,6 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Shared in-memory state for Layer 3 polling
-SHARED_STATE = {
-    "violations": [],
-    "defects": [],
-}
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -105,8 +99,7 @@ async def analyze_compliance(
     result = await check_compliance(spatial_data, rag_results, codes_list)
     result.blueprint_filename = filename
 
-    # Feed into shared state + feedback loop
-    SHARED_STATE["violations"] = [v.model_dump() if hasattr(v, "model_dump") else v for v in result.violations]
+    # Feed into feedback loop
     feedback_loop.update_compliance(result)
 
     return result
@@ -273,7 +266,19 @@ async def foresight_dashboard():
 @app.get("/api/v1/project/shared-state")
 async def get_shared_state():
     """Layer 3 (or the frontend) polls this to see current violations + defects."""
-    return SHARED_STATE
+    violations = []
+    if feedback_loop.compliance_result:
+        violations = [
+            v.model_dump() if hasattr(v, "model_dump") else v
+            for v in feedback_loop.compliance_result.violations
+        ]
+    defects = []
+    if feedback_loop.defect_report:
+        defects = [
+            d.model_dump() if hasattr(d, "model_dump") else d
+            for d in feedback_loop.defect_report.defects
+        ]
+    return {"violations": violations, "defects": defects}
 
 
 @app.get("/api/v1/project/health", response_model=ProjectHealth)
@@ -313,6 +318,17 @@ async def download_defect_pdf():
     pdf_bytes = generate_defect_pdf(feedback_loop.defect_report)
     return Response(content=pdf_bytes, media_type="application/pdf",
                     headers={"Content-Disposition": "attachment; filename=defect_report.pdf"})
+
+
+@app.get("/api/v1/foresight/report/pdf")
+async def download_foresight_pdf():
+    """Download foresight/risk report as PDF."""
+    if not feedback_loop.foresight_report:
+        raise HTTPException(404, "No foresight analysis available. Run a risk analysis first.")
+    from backend.report_generator import generate_foresight_pdf
+    pdf_bytes = generate_foresight_pdf(feedback_loop.foresight_report)
+    return Response(content=pdf_bytes, media_type="application/pdf",
+                    headers={"Content-Disposition": "attachment; filename=foresight_report.pdf"})
 
 
 # ── Health Check ────────────────────────────────────────────────────

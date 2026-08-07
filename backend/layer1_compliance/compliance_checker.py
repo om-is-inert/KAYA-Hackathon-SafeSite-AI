@@ -20,7 +20,6 @@ logger = logging.getLogger(__name__)
 genai.configure(api_key=GEMINI_API_KEY)
 
 from backend.json_utils import parse_gemini_json
-from backend.gemini_schemas import COMPLIANCE_CHECK_SCHEMA
 
 
 COMPLIANCE_CHECK_PROMPT = (

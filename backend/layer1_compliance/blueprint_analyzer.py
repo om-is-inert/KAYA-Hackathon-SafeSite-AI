@@ -17,7 +17,6 @@ from PIL import Image
 
 from backend import config
 from backend.config import GEMINI_API_KEY, VLM_MODEL
-from backend.gemini_schemas import SPATIAL_EXTRACTION_SCHEMA, COMPLIANCE_CHECK_SCHEMA
 
 logger = logging.getLogger(__name__)
 

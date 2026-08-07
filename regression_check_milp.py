@@ -1,31 +1,90 @@
 """
 regression_check_milp.py
 
-Runs the OLD linprog-based optimizer and the NEW milp-based optimizer on
-identical default tasks, and diffs the results. Use this once, right after
-the migration, to confirm milp didn't change behavior other than enforcing
-integer days.
+Self-contained regression check: compares the OLD linprog-based optimizer
+(embedded inline below) against the NEW milp-based optimizer on identical
+default tasks, and diffs the results.
 
 Usage:
     python regression_check_milp.py
 
-Requires both versions to be importable — adjust the import paths below
-to match wherever you've placed the old vs new file (e.g. keep the old
-one temporarily as resource_optimizer_linprog_OLD.py during this check,
-then delete it once you're satisfied).
+The old linprog logic is inlined here so this script remains runnable even
+after cost_optimizer.py has been deleted from the repo. The new milp
+version is imported from the live module.
 """
 
 import copy
 
-# Adjust these imports to match your actual file locations.
-from backend.layer3_foresight.resource_optimizer_linprog_OLD import (
-    optimize_resources as optimize_old,
-    _default_tasks,
-)
+import numpy as np
+from scipy.optimize import linprog
+
+from backend.models import OptimizationResult
 from backend.layer3_foresight.resource_optimizer import (
     optimize_resources as optimize_new,
 )
 
+
+# ── Inlined OLD linprog optimizer (exact copy of the deleted cost_optimizer.py) ──
+
+def _default_tasks() -> list[dict]:
+    """Default construction task set for demo."""
+    return [
+        {"name": "Foundation Work", "duration_days": 30, "workers_needed": 15, "cost_per_day": 25000, "priority": 2},
+        {"name": "Structural Framework", "duration_days": 45, "workers_needed": 20, "cost_per_day": 35000, "priority": 2},
+        {"name": "MEP Installation", "duration_days": 30, "workers_needed": 12, "cost_per_day": 20000, "priority": 3},
+        {"name": "Concrete Pouring", "duration_days": 20, "workers_needed": 18, "cost_per_day": 30000, "priority": 1},
+        {"name": "Finishing & Interiors", "duration_days": 35, "workers_needed": 10, "cost_per_day": 18000, "priority": 4},
+        {"name": "Quality Inspection", "duration_days": 15, "workers_needed": 5, "cost_per_day": 12000, "priority": 3},
+    ]
+
+
+def optimize_old(
+    tasks: list[dict] | None = None,
+    total_workers: int = 50,
+    total_days: int = 180,
+) -> OptimizationResult:
+    """OLD linprog-based optimizer (continuous LP + post-hoc int() truncation)."""
+    if tasks is None:
+        tasks = _default_tasks()
+
+    c = np.array([t["cost_per_day"] for t in tasks], dtype=float)
+    A_ub = np.array([[t["workers_needed"] for t in tasks]], dtype=float)
+    b_ub = np.array([total_workers * total_days], dtype=float)
+    bounds = [(t["duration_days"], t["duration_days"] * 1.5) for t in tasks]
+
+    result = linprog(c, A_ub=A_ub, b_ub=b_ub, bounds=bounds, method="highs")
+
+    if result.success:
+        optimized_days = result.x
+        original_cost = sum(t["cost_per_day"] * t["duration_days"] * 1.2 for t in tasks)
+        optimized_cost = float(result.fun)
+
+        allocation = []
+        for i, task in enumerate(tasks):
+            allocation.append({
+                "task": task["name"],
+                "original_days": int(task["duration_days"] * 1.2),
+                "optimized_days": int(optimized_days[i]),
+                "workers": task["workers_needed"],
+                "daily_cost": task["cost_per_day"],
+                "total_cost": int(optimized_days[i] * task["cost_per_day"]),
+            })
+
+        savings = ((original_cost - optimized_cost) / original_cost) * 100
+
+        return OptimizationResult(
+            status="optimal",
+            objective_value=round(optimized_cost, 2),
+            original_cost=round(original_cost, 2),
+            optimized_cost=round(optimized_cost, 2),
+            savings_percent=round(savings, 1),
+            resource_allocation=allocation,
+        )
+    else:
+        return OptimizationResult(status="infeasible", objective_value=0)
+
+
+# ── Regression diff ──────────────────────────────────────────────────
 
 def main():
     tasks_old = copy.deepcopy(_default_tasks())
@@ -63,7 +122,7 @@ def main():
     cost_delta = new_result.optimized_cost - old_result.optimized_cost
     print(f"Objective value delta (new - old): {cost_delta:+.2f}")
     if abs(cost_delta) > old_result.optimized_cost * 0.02:
-        print("  ⚠️  >2% difference in objective value — investigate before trusting migration.")
+        print("  WARNING: >2% difference in objective value — investigate before trusting migration.")
     else:
         print("  OK — objective value within expected rounding tolerance.")
 

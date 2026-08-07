@@ -22,7 +22,6 @@ logger = logging.getLogger(__name__)
 genai.configure(api_key=GEMINI_API_KEY)
 
 from backend.json_utils import parse_gemini_json
-from backend.gemini_schemas import DEFECT_DETECTION_SCHEMA
 
 DEFECT_DETECTION_PROMPT = """You are a construction defect detection AI specialist.
 Analyze this construction site photo and identify ALL visible defects.

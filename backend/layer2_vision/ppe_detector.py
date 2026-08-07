@@ -26,7 +26,6 @@ import google.generativeai as genai
 
 from backend.config import GEMINI_API_KEY, VLM_MODEL
 from backend.json_utils import parse_gemini_json
-from backend.gemini_schemas import PPE_DETECTION_SCHEMA
 
 logger = logging.getLogger(__name__)
 genai.configure(api_key=GEMINI_API_KEY)
