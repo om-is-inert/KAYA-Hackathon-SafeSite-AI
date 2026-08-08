@@ -1,8 +1,10 @@
 /**
- * Preloader — full-page loading screen that waits for ALL
- * hero videos (canplaythrough) and critical images (onload) across
- * the entire site before revealing the app. Once loaded, users can
- * navigate instantly between pages without seeing a loading screen.
+ * Preloader — single global loading screen that preloads ALL hero videos and
+ * critical images before revealing the app. Videos are kept alive in a hidden
+ * off-screen DOM container after the overlay dismisses, so the browser holds
+ * their media buffers in memory for the full session. When a page's own
+ * <video> tag uses the same hashed src, the browser serves it from cache and
+ * it starts playing instantly — no per-page buffering delay.
  *
  * Usage: wrap <App /> routes inside <Preloader>.
  *   <Preloader><Routes>...</Routes></Preloader>
@@ -15,51 +17,73 @@ import './Preloader.css';
 /* ── Global Asset Manifest ───────────────────────────────────────── */
 /* We import the same asset references the pages import so Vite
    resolves identical hashed URLs — no double-download. */
-import heroVideo from '../../Assets/606982_Cities_City_3840x2160.mp4';
-import ceHeroVideo from '../../Assets/8471078-hd_1920_1080_25fps.mp4';
-import veHeroVideo from '../../Assets/13177813_1920_1080_60fps.mp4';
-import feHeroVideo from '../../Assets/14378494_1920_1080_24fps.mp4';
+import heroVideo    from '../../Assets/606982_Cities_City_3840x2160.mp4';
+import ceHeroVideo  from '../../Assets/8471078-hd_1920_1080_25fps.mp4';
+import veHeroVideo  from '../../Assets/13177813_1920_1080_60fps.mp4';
+import feHeroVideo  from '../../Assets/14378494_1920_1080_24fps.mp4';
 
-import featureImage1 from '../../Assets/pointing-sketch.jpg';
-import featureImage2 from '../../Assets/farbsynthese-village-7133842.jpg';
-import featureImage3 from '../../Assets/11066063-construction-site-4020496.jpg';
-import closingPhotoVE from '../../Assets/pexels-danielellis-11701517.jpg';
-import closingPhotoCE from '../../Assets/pexels-thirdman-8482551.jpg';
-import closingPhotoFE from '../../Assets/pexels-nacho-monge-425000126-31329571.jpg';
+import featureImage1   from '../../Assets/pointing-sketch.jpg';
+import featureImage2   from '../../Assets/farbsynthese-village-7133842.jpg';
+import featureImage3   from '../../Assets/11066063-construction-site-4020496.jpg';
+import closingPhotoVE  from '../../Assets/pexels-danielellis-11701517.jpg';
+import closingPhotoCE  from '../../Assets/pexels-thirdman-8482551.jpg';
+import closingPhotoFE  from '../../Assets/pexels-nacho-monge-425000126-31329571.jpg';
 
-const GLOBAL_ASSETS = {
-  videos: [heroVideo, ceHeroVideo, veHeroVideo, feHeroVideo],
-  images: [
-    featureImage1, 
-    featureImage2, 
-    featureImage3,
-    closingPhotoVE,
-    closingPhotoCE,
-    closingPhotoFE
-  ],
-};
+const VIDEO_SRCS = [heroVideo, ceHeroVideo, veHeroVideo, feHeroVideo];
+const IMAGE_SRCS = [
+  featureImage1,
+  featureImage2,
+  featureImage3,
+  closingPhotoVE,
+  closingPhotoCE,
+  closingPhotoFE,
+];
 
 /* Minimum time the loader is visible (ms) so it doesn't just flash */
 const MIN_DISPLAY_MS = 1200;
 
+/* Per-video hard timeout (ms) — never block the user longer than this
+   even if a codec is unsupported or the connection is very slow */
+const VIDEO_TIMEOUT_MS = 20000;
+
+/* ── Persistent warm container ───────────────────────────────────── */
+/* Module-level singleton: lives for the entire browser session.
+   Videos are appended here so their buffers stay hot after the overlay
+   closes. The page <video> tags then load from the browser media cache. */
+let _warmContainer = null;
+function getWarmContainer() {
+  if (_warmContainer) return _warmContainer;
+  _warmContainer = document.createElement('div');
+  _warmContainer.setAttribute('aria-hidden', 'true');
+  Object.assign(_warmContainer.style, {
+    position : 'fixed',
+    top      : '-9999px',
+    left     : '-9999px',
+    width    : '1px',
+    height   : '1px',
+    overflow : 'hidden',
+    pointerEvents: 'none',
+    opacity  : '0',
+    zIndex   : '-1',
+  });
+  document.body.appendChild(_warmContainer);
+  return _warmContainer;
+}
+
 export default function Preloader({ children }) {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading]   = useState(true);
   const [progress, setProgress] = useState(0);
   const overlayRef = useRef(null);
-  const startTime = useRef(Date.now());
+  const startTime  = useRef(Date.now());
 
   /* Preload ALL assets globally on initial mount */
   useEffect(() => {
-    if (!loading) return;
-
-    const assets = GLOBAL_ASSETS;
-    const totalCount = assets.videos.length + assets.images.length;
+    const totalCount = VIDEO_SRCS.length + IMAGE_SRCS.length;
 
     /* Nothing to preload — skip */
     if (totalCount === 0) {
-      const elapsed = Date.now() - startTime.current;
-      const remaining = Math.max(0, MIN_DISPLAY_MS - elapsed);
       setProgress(100);
+      const remaining = Math.max(0, MIN_DISPLAY_MS - (Date.now() - startTime.current));
       setTimeout(() => revealPage(), remaining);
       return;
     }
@@ -70,34 +94,54 @@ export default function Preloader({ children }) {
       loaded += 1;
       setProgress(Math.round((loaded / totalCount) * 100));
       if (loaded >= totalCount) {
-        const elapsed = Date.now() - startTime.current;
-        const remaining = Math.max(0, MIN_DISPLAY_MS - elapsed);
+        const remaining = Math.max(0, MIN_DISPLAY_MS - (Date.now() - startTime.current));
         setTimeout(() => revealPage(), remaining);
       }
     };
 
-    /* Videos — wait for `canplaythrough` (enough buffered to play without stalling) */
-    assets.videos.forEach((src) => {
+    const warmContainer = getWarmContainer();
+
+    /* ── Videos ──────────────────────────────────────────────────── */
+    /* Each video is attached to the persistent warm container so:
+       1. The browser fully buffers them during the loading screen.
+       2. They remain in memory/cache so when a page renders its own
+          <video src="same-hashed-url">, playback begins instantly. */
+    VIDEO_SRCS.forEach((src) => {
       const v = document.createElement('video');
-      v.preload = 'auto';
-      v.muted = true;
+      v.preload     = 'auto';
+      v.muted       = true;
       v.playsInline = true;
-      v.src = src;
-      v.addEventListener('canplaythrough', tick, { once: true });
-      /* Fallback: if the event never fires (e.g. codec issue), don't block forever */
-      setTimeout(() => {
-        if (loaded < totalCount) tick();
-      }, 15000);
+      v.loop        = true;
+      v.src         = src;
+
+      let settled = false;
+      const settle = () => {
+        if (settled) return;
+        settled = true;
+        tick();
+      };
+
+      v.addEventListener('canplaythrough', settle, { once: true });
+      v.addEventListener('error',          settle, { once: true });
+
+      /* Hard deadline — don't block indefinitely */
+      setTimeout(settle, VIDEO_TIMEOUT_MS);
+
+      /* Attach to persistent container → buffer stays warm after overlay closes */
+      warmContainer.appendChild(v);
+
+      /* Explicitly kick off network fetch */
+      v.load();
     });
 
-    /* Images */
-    assets.images.forEach((src) => {
+    /* ── Images ──────────────────────────────────────────────────── */
+    IMAGE_SRCS.forEach((src) => {
       const img = new Image();
       img.src = src;
       if (img.complete) {
         tick();
       } else {
-        img.onload = tick;
+        img.onload  = tick;
         img.onerror = tick; // don't block on broken images
       }
     });
@@ -114,9 +158,9 @@ export default function Preloader({ children }) {
 
     /* Animate the overlay away */
     gsap.to(overlayRef.current, {
-      clipPath: 'inset(0 0 100% 0)',
-      duration: 0.8,
-      ease: 'power3.inOut',
+      clipPath : 'inset(0 0 100% 0)',
+      duration : 0.8,
+      ease     : 'power3.inOut',
       onComplete: () => setLoading(false),
     });
   }, []);
