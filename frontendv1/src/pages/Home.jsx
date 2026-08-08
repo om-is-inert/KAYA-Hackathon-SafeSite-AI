@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useRef } from 'react';
 import TextPressure from '../components/TextPressure';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
@@ -8,14 +8,19 @@ import featureImage1 from '../../Assets/pointing-sketch.jpg';
 import featureImage2 from '../../Assets/farbsynthese-village-7133842.jpg';
 import featureImage3 from '../../Assets/11066063-construction-site-4020496.jpg';
 import { Link } from 'react-router-dom';
+import { useWarmVideo } from '../hooks/useWarmVideo';
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 function Home() {
-  const containerRef = useRef();
-  const heroRef = useRef();
-  const videoRef = useRef();
-  const wordmarkRef = useRef();
+  const containerRef  = useRef();
+  const heroRef        = useRef();
+  const videoRef       = useRef();
+  const videoWrapRef   = useRef();
+  const wordmarkRef    = useRef();
+
+  /* Claim the pre-warmed video from the pool — runs before GSAP */
+  useWarmVideo(heroVideo, videoRef, videoWrapRef, 'hero-video');
 
   useGSAP(() => {
     const tl = gsap.timeline({
@@ -79,15 +84,8 @@ function Home() {
 
       {/* Pinned Hero Section */}
       <div ref={heroRef} className="hero-section">
-        <video 
-          ref={videoRef}
-          className="hero-video"
-          src={heroVideo}
-          autoPlay 
-          loop 
-          muted 
-          playsInline
-        />
+        {/* Pre-warmed video injected here by useWarmVideo hook */}
+        <div ref={videoWrapRef} />
 
         <div ref={wordmarkRef} className="hero-content">
           {/* Hero Title with React Bits TextPressure Effect */}

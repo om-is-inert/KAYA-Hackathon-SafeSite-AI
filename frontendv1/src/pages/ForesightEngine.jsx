@@ -8,6 +8,7 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import './ComplianceEngine.css'; // Reusing exact same styles
+import { useWarmVideo } from '../hooks/useWarmVideo';
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -22,9 +23,13 @@ export default function ForesightEngine() {
   const [optimizeResult, setOptimizeResult] = useState(null);
   const [forecastResult, setForecastResult] = useState(null);
   const [error, setError] = useState(null);
-  const containerRef = useRef();
-  const heroRef = useRef();
-  const videoRef = useRef();
+  const containerRef  = useRef();
+  const heroRef        = useRef();
+  const videoRef       = useRef();
+  const videoWrapRef   = useRef();
+
+  /* Claim the pre-warmed video from the pool — runs before GSAP */
+  useWarmVideo(feHeroVideo, videoRef, videoWrapRef, 'ce-hero-video');
 
   const toggleStat = (i) => setOpenStat(prev => (prev === i ? null : i));
 
@@ -190,15 +195,8 @@ export default function ForesightEngine() {
     <div ref={containerRef} className="ce-dashboard page-transition">
 
       <div ref={heroRef} className="ce-hero">
-        <video 
-          ref={videoRef}
-          className="ce-hero-video"
-          src={feHeroVideo}
-          autoPlay 
-          loop 
-          muted 
-          playsInline
-        />
+        {/* Pre-warmed video injected here by useWarmVideo hook */}
+        <div ref={videoWrapRef} />
         <div className="ce-hero-content">
           <div style={{ position: 'relative', width: '97%', height: '300px', zIndex: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <TextPressure
