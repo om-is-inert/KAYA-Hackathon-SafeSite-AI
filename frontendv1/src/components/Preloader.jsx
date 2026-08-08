@@ -13,6 +13,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import gsap from 'gsap';
 import './Preloader.css';
+import { getWarmContainer, registerWarmVideo } from '../utils/videoPool';
 
 /* ── Global Asset Manifest ───────────────────────────────────────── */
 /* We import the same asset references the pages import so Vite
@@ -46,29 +47,7 @@ const MIN_DISPLAY_MS = 1200;
    even if a codec is unsupported or the connection is very slow */
 const VIDEO_TIMEOUT_MS = 20000;
 
-/* ── Persistent warm container ───────────────────────────────────── */
-/* Module-level singleton: lives for the entire browser session.
-   Videos are appended here so their buffers stay hot after the overlay
-   closes. The page <video> tags then load from the browser media cache. */
-let _warmContainer = null;
-function getWarmContainer() {
-  if (_warmContainer) return _warmContainer;
-  _warmContainer = document.createElement('div');
-  _warmContainer.setAttribute('aria-hidden', 'true');
-  Object.assign(_warmContainer.style, {
-    position : 'fixed',
-    top      : '-9999px',
-    left     : '-9999px',
-    width    : '1px',
-    height   : '1px',
-    overflow : 'hidden',
-    pointerEvents: 'none',
-    opacity  : '0',
-    zIndex   : '-1',
-  });
-  document.body.appendChild(_warmContainer);
-  return _warmContainer;
-}
+/* ── getWarmContainer and video registry are in src/utils/videoPool.js ── */
 
 export default function Preloader({ children }) {
   const [loading, setLoading]   = useState(true);
@@ -126,6 +105,9 @@ export default function Preloader({ children }) {
 
       /* Hard deadline — don't block indefinitely */
       setTimeout(settle, VIDEO_TIMEOUT_MS);
+
+      /* Register in the pool so pages can claim this exact element later */
+      registerWarmVideo(src, v);
 
       /* Attach to persistent container → buffer stays warm after overlay closes */
       warmContainer.appendChild(v);

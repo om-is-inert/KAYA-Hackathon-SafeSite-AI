@@ -7,6 +7,7 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import './ComplianceEngine.css';
+import { useWarmVideo } from '../hooks/useWarmVideo';
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -27,10 +28,14 @@ export default function ComplianceEngine() {
       prev.includes(code) ? prev.filter(c => c !== code) : [...prev, code]
     );
   };
-  const containerRef = useRef();
-  const heroRef = useRef();
-  const videoRef = useRef();
-  const fileInputRef = useRef();
+  const containerRef  = useRef();
+  const heroRef        = useRef();
+  const videoRef       = useRef();
+  const videoWrapRef   = useRef();
+  const fileInputRef   = useRef();
+
+  /* Claim the pre-warmed video from the pool — runs before GSAP */
+  useWarmVideo(ceHeroVideo, videoRef, videoWrapRef, 'ce-hero-video');
 
   const toggleStat = (i) => setOpenStat(prev => (prev === i ? null : i));
 
@@ -156,15 +161,8 @@ export default function ComplianceEngine() {
     <div ref={containerRef} className="ce-dashboard page-transition">
 
       <div ref={heroRef} className="ce-hero">
-        <video 
-          ref={videoRef}
-          className="ce-hero-video"
-          src={ceHeroVideo}
-          autoPlay 
-          loop 
-          muted 
-          playsInline
-        />
+        {/* Pre-warmed video injected here by useWarmVideo hook */}
+        <div ref={videoWrapRef} />
         <div className="ce-hero-content">
           <div style={{ position: 'relative', width: '97%', height: '300px', zIndex: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <TextPressure
