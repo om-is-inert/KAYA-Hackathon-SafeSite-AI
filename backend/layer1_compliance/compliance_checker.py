@@ -19,7 +19,7 @@ from backend.models import ComplianceResult, Severity, SpatialElement, Violation
 logger = logging.getLogger(__name__)
 genai.configure(api_key=GEMINI_API_KEY)
 
-from backend.json_utils import parse_gemini_json
+from backend.json_utils import parse_gemini_json, get_or_default
 
 
 COMPLIANCE_CHECK_PROMPT = (
@@ -90,18 +90,18 @@ async def check_compliance(
     violations = []
     for v in result_data.get("violations", []):
         try:
-            sev = Severity(v.get("severity", "MEDIUM").upper())
+            sev = Severity(get_or_default(v, "severity", "MEDIUM").upper())
         except ValueError:
             sev = Severity.MEDIUM
         violations.append(Violation(
-            id=v.get("id", f"V{uuid.uuid4().hex[:6].upper()}"),
-            exact_location=v.get("exact_location", "Unknown"),
-            measured_value=v.get("measured_value", "N/A"),
-            required_value=v.get("required_value", "N/A"),
-            code_reference=v.get("code_reference", ""),
+            id=get_or_default(v, "id", f"V{uuid.uuid4().hex[:6].upper()}"),
+            exact_location=get_or_default(v, "exact_location", "Not specified"),
+            measured_value=get_or_default(v, "measured_value", "Not specified"),
+            required_value=get_or_default(v, "required_value", "Not specified"),
+            code_reference=get_or_default(v, "code_reference", ""),
             severity=sev,
-            fix_suggestion=v.get("fix_suggestion", ""),
-            category=v.get("category", "general"),
+            fix_suggestion=get_or_default(v, "fix_suggestion", ""),
+            category=get_or_default(v, "category", "general"),
         ))
 
     elements = []

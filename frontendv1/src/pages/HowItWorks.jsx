@@ -56,7 +56,7 @@ export default function HowItWorks() {
         </div>
         <div className="hiw-intro-text">
           <p>
-            SafeSite AI runs as one connected pipeline across three engines — from blueprint to build. Here's how each one works.
+            SafeSite AI runs as one connected pipeline across three engines  -  from blueprint to build. Here's how each one works.
           </p>
         </div>
       </section>
@@ -66,7 +66,7 @@ export default function HowItWorks() {
           
           {/* Compliance Engine Block */}
           <div className="hiw-block">
-            <div className="hiw-label">01 — COMPLIANCE ENGINE</div>
+            <div className="hiw-label">01  -  COMPLIANCE ENGINE</div>
             <div className="hiw-flow">
               <span>Upload Blueprint</span>
               <span className="hiw-arrow">→</span>
@@ -83,7 +83,7 @@ export default function HowItWorks() {
 
           {/* Vision Engine Block */}
           <div className="hiw-block">
-            <div className="hiw-label">02 — VISION ENGINE</div>
+            <div className="hiw-label">02  -  VISION ENGINE</div>
             <div className="hiw-flow">
               <span>Upload Site Photo</span>
               <span className="hiw-arrow">→</span>
@@ -100,7 +100,7 @@ export default function HowItWorks() {
 
           {/* Foresight Engine Block */}
           <div className="hiw-block">
-            <div className="hiw-label">03 — FORESIGHT ENGINE</div>
+            <div className="hiw-label">03  -  FORESIGHT ENGINE</div>
             <div className="hiw-flow">
               <span>Upload Project Schedule</span>
               <span className="hiw-arrow">→</span>

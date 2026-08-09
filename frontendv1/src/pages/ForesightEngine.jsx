@@ -9,10 +9,30 @@ import { useGSAP } from '@gsap/react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import './ComplianceEngine.css'; // Reusing exact same styles
 import { useWarmVideo } from '../hooks/useWarmVideo';
+import AnalysisProgress from '../components/AnalysisProgress';
+
+const SIMULATION_STEPS = [
+  'Reading current violation & defect state',
+  'Running 10,000 Monte Carlo iterations',
+  'Modelling delay and cost distributions',
+  'Compiling risk scenarios',
+];
+
+const OPTIMIZE_STEPS = [
+  'Reading rework requirements',
+  'Solving MILP resource allocation',
+  'Comparing against baseline cost',
+];
+
+const FORECAST_STEPS = [
+  'Loading cost index history',
+  'Running exponential smoothing',
+  'Projecting confidence bands',
+];
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
-const API_BASE = 'http://localhost:8000';
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
 
 export default function ForesightEngine() {
   const [openStat, setOpenStat] = useState(null);
@@ -407,7 +427,7 @@ export default function ForesightEngine() {
       <section className="ce-workspace-section" style={{ paddingTop: 0 }}>
         <div style={{ height: '1px', background: '#EAEAEA', width: '100%', marginBottom: '4rem' }}></div>
 
-        {/* Section 6 — Gantt from schedule_data */}
+        {/* Section 6  -  Gantt from schedule_data */}
         <div className="ce-workspace-top">
           <div className="ce-workspace-left">
             <h2 className="ce-section-title">Probabilistic Project Schedule (Gantt)</h2>
@@ -452,15 +472,23 @@ export default function ForesightEngine() {
               </div>
             ) : (
               <div className="ce-dropzone" style={{ minHeight: '120px', padding: '3rem 2rem', gap: '1.5rem' }}>
-                <span className="ce-dropzone-text">Click Run Simulation to model delay risks & duration shifts</span>
-                <button
-                  className="nav-cta cta-large"
-                  style={{ width: 'fit-content' }}
-                  onClick={handleRunSimulation}
-                  disabled={isSimulating}
-                >
-                  {isSimulating ? 'Simulating...' : 'Run Simulation'}
-                </button>
+                {isSimulating ? (
+                  <>
+                    <span className="ce-dropzone-text">Running simulation</span>
+                    <AnalysisProgress steps={SIMULATION_STEPS} active={isSimulating} />
+                  </>
+                ) : (
+                  <>
+                    <span className="ce-dropzone-text">Click Run Simulation to model delay risks & duration shifts</span>
+                    <button
+                      className="nav-cta cta-large"
+                      style={{ width: 'fit-content' }}
+                      onClick={handleRunSimulation}
+                    >
+                      Run Simulation
+                    </button>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -468,7 +496,7 @@ export default function ForesightEngine() {
 
         <div style={{ height: '1px', background: '#EAEAEA', width: '100%', margin: '4rem 0' }}></div>
 
-        {/* Section 7 — MILP Optimization */}
+        {/* Section 7  -  MILP Optimization */}
         <div className="ce-workspace-top">
           <div className="ce-workspace-left">
             <h2 className="ce-section-title">MILP Resource Re-Optimization</h2>
@@ -502,15 +530,23 @@ export default function ForesightEngine() {
               </div>
             ) : (
               <div className="ce-dropzone" style={{ minHeight: '120px', padding: '3rem 2rem', gap: '1.5rem' }}>
-                <span className="ce-dropzone-text">Trigger optimization to compute minimum-cost crew allocation</span>
-                <button
-                  className="nav-cta cta-large"
-                  style={{ width: 'fit-content' }}
-                  onClick={handleOptimize}
-                  disabled={isOptimizing}
-                >
-                  {isOptimizing ? 'Optimizing...' : 'Re-Optimize'}
-                </button>
+                {isOptimizing ? (
+                  <>
+                    <span className="ce-dropzone-text">Optimizing resource allocation</span>
+                    <AnalysisProgress steps={OPTIMIZE_STEPS} active={isOptimizing} />
+                  </>
+                ) : (
+                  <>
+                    <span className="ce-dropzone-text">Trigger optimization to compute minimum-cost crew allocation</span>
+                    <button
+                      className="nav-cta cta-large"
+                      style={{ width: 'fit-content' }}
+                      onClick={handleOptimize}
+                    >
+                      Re-Optimize
+                    </button>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -518,7 +554,7 @@ export default function ForesightEngine() {
 
         <div style={{ height: '1px', background: '#EAEAEA', width: '100%', margin: '4rem 0' }}></div>
 
-        {/* Section 8 — Material Cost Forecast */}
+        {/* Section 8  -  Material Cost Forecast */}
         <div className="ce-workspace-top">
           <div className="ce-workspace-left">
             <h2 className="ce-section-title">Material Cost Index Forecast</h2>
@@ -554,15 +590,23 @@ export default function ForesightEngine() {
               </div>
             ) : (
               <div className="ce-dropzone" style={{ minHeight: '120px', padding: '3rem 2rem', gap: '1.5rem' }}>
-                <span className="ce-dropzone-text">Time-series projection will chart cement/steel volatility here</span>
-                <button
-                  className="nav-cta cta-large"
-                  style={{ width: 'fit-content' }}
-                  onClick={handleForecast}
-                  disabled={isForecasting}
-                >
-                  {isForecasting ? 'Forecasting...' : 'Run Forecast'}
-                </button>
+                {isForecasting ? (
+                  <>
+                    <span className="ce-dropzone-text">Forecasting material costs</span>
+                    <AnalysisProgress steps={FORECAST_STEPS} active={isForecasting} />
+                  </>
+                ) : (
+                  <>
+                    <span className="ce-dropzone-text">Time-series projection will chart cement/steel volatility here</span>
+                    <button
+                      className="nav-cta cta-large"
+                      style={{ width: 'fit-content' }}
+                      onClick={handleForecast}
+                    >
+                      Run Forecast
+                    </button>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -570,7 +614,7 @@ export default function ForesightEngine() {
 
         <div style={{ height: '1px', background: '#EAEAEA', width: '100%', margin: '4rem 0' }}></div>
 
-        {/* Section 9 — Monte Carlo Risk Distribution */}
+        {/* Section 9  -  Monte Carlo Risk Distribution */}
         <div className="ce-workspace-top">
           <div className="ce-workspace-left">
             <h2 className="ce-section-title" style={{ color: '#111' }}>Monte Carlo Risk Distribution</h2>
@@ -624,7 +668,7 @@ export default function ForesightEngine() {
       {/* Story block */}
       <section className="ce-story-section" style={{ background: '#FAFAFA', padding: '8rem 4rem', display: 'flex', justifyContent: 'center', textAlign: 'center' }}>
         <div style={{ maxWidth: '800px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <span style={{ fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', color: '#666', margin: '0 0 1.5rem 0' }}>03 — FORESIGHT ENGINE</span>
+          <span style={{ fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', color: '#666', margin: '0 0 1.5rem 0' }}>03  -  FORESIGHT ENGINE</span>
           <h3 style={{ fontSize: '2.2rem', fontWeight: 600, lineHeight: 1.3, color: '#111', letterSpacing: '-0.02em', margin: '0 0 2.5rem 0' }}>
             Predicts where delays and defects are likely to occur next, based on patterns across thousands of past builds, using continuous Monte Carlo simulation and MILP-based resource optimization.
           </h3>

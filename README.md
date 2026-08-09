@@ -21,24 +21,23 @@ This isn't three separate tools — it's **one system** where every detection in
 > *"Is this design legal?"*
 
 - **Spatial Extraction via VLM**: Gemini 2.5 Flash extracts hallway widths, door swings, room areas, stairwell dimensions, and exit distances from uploaded blueprints (`.pdf` / `.png` / `.jpg`).
-- **Code Retrieval via RAG**: ChromaDB + `bge-large-en-v1.5` embeddings against National Building Code 2016 Part IV (Fire & Life Safety) and IS 456:2000.
+- **Code Retrieval via RAG**: numpy cosine-similarity search over `gemini-embedding-001` vectors against National Building Code 2016 Part IV (Fire & Life Safety) and IS 456:2000.
 - **Agentic Compliance Loop**: Cross-references extracted spatial data against retrieved code clauses with severity grading.
 - **Output**: Flagged violations with exact location, measurement vs. requirement, code citation (e.g., *"Hallway B2 is 3ft wide, NBC §4.3.2 requires minimum 4ft"*).
 
 ### 🔍 Layer 2 — Vision Engine (Active Build)
 > *"Does reality match the design?"*
 
-- **Point Cloud Segmentation**: BIM-Net++ (pretrained on HePIC dataset) converts raw scans into labeled structural elements (walls, columns, slabs).
-- **Defect Detection**: YOLOv11-seg / SAM 2 for surface-level defects (cracks, spalling, honeycombing, exposed rebar) with pixel-level masks.
-- **BIM Deviation Alignment**: ICP-based overlay of as-built data against BIM files to compute mm-level deviation per element.
-- **Stage 1 Fallback**: VLM-based defect analysis on site photos (zero-shot via Gemini).
+- **Defect Detection**: Zero-shot VLM (Gemini 2.5 Flash) identifies surface-level defects (cracks, spalling, honeycombing, exposed rebar) on site photos today; a fine-tuned YOLOv11-seg pixel-mask path is scaffolded in code, gated behind a flag, pending trained weights.
+- **BIM Deviation Alignment**: Pure geometric Scan-to-BIM comparison of as-built element dimensions against the Layer 1 blueprint.
+- **PPE / Site Safety Audit**: Zero-shot VLM safety audit against the SH17 PPE taxonomy.
 
 ### 🔮 Layer 3 — Foresight Engine (Continuous)
 > *"What will happen next, and what should we do?"*
 
-- **Time-Series Forecasting**: Exponential Smoothing (Current) / Prophet & XGBoost (Planned) for material lead-time and price volatility prediction.
-- **Bayesian Risk Modeling**: Monte Carlo simulation (10,000+ iterations) for probabilistic delay/completion estimates (e.g., *"82% on-time, 14% risk of 3-week delay"*).
-- **MILP Resource Optimization**: SciPy/Gurobi-based re-optimization triggered automatically when Layer 2 flags rework-requiring defects.
+- **Time-Series Forecasting**: Exponential smoothing over synthetic cost-index data today (demo forecaster); Prophet/XGBoost on live CIDC data is roadmap.
+- **Monte Carlo Risk Modeling**: Real `numpy` stochastic simulation (10,000+ iterations) for probabilistic delay/completion estimates (e.g., *"82% on-time, 14% risk of 3-week delay"*).
+- **MILP Resource Optimization**: Real `scipy.optimize.milp` integer programming, re-optimizing automatically when Layer 2 flags rework-requiring defects.
 
 ---
 
@@ -55,8 +54,8 @@ graph TB
     end
 
     subgraph "Layer 2 — Vision Engine"
-        G[Site Photos / Point Clouds] --> H[BIM-Net++ / YOLO]
-        H --> I[Defect + Deviation Report]
+        G[Site Photos] --> H[Gemini VLM]
+        H --> I[Defect + PPE Report]
     end
 
     subgraph "Layer 3 — Foresight Engine"
@@ -75,17 +74,16 @@ graph TB
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | HTML5, Vanilla CSS, JavaScript (dark mode, glassmorphism) |
-| Backend | Python 3.10+ / FastAPI / Uvicorn |
+| Frontend | React / Vite (Cloudflare Pages) |
+| Backend | Python 3.10+ / FastAPI / Uvicorn (Render) |
 | VLM | Google Gemini 2.5 Flash |
-| Embeddings | `bge-large-en-v1.5` (BAAI) via `sentence-transformers` |
-| Vector Store | ChromaDB |
+| Embeddings | Google `gemini-embedding-001` |
+| Vector Store | numpy cosine-similarity (in-process) |
 | PDF Parsing | PyMuPDF (`fitz`) |
-| Point Cloud | BIM-Net++ (HePIC dataset) |
-| Defect Detection | YOLOv11-seg / SAM 2 |
-| Forecasting | Exponential Smoothing (Current) / Prophet (Planned) |
-| Risk Modeling | Monte Carlo / Bayesian Belief Network |
-| Optimization | SciPy `milp` / Gurobi |
+| Defect / PPE Detection | Gemini 2.5 Flash zero-shot VLM (YOLOv11-seg fallback path scaffolded, not live) |
+| Forecasting | Exponential smoothing on synthetic data (demo); Prophet/XGBoost on live data is roadmap |
+| Risk Modeling | Monte Carlo simulation (`numpy`, 10,000 iterations) |
+| Optimization | SciPy `milp` (real integer programming) |
 | Reports | fpdf2 |
 | Resiliency | Gemini Free-Tier Rate Limit Retries, Multi-pass JSON Repair Utility |
 
@@ -95,12 +93,11 @@ graph TB
 
 | Purpose | Dataset | Model |
 |---|---|---|
-| Blueprint parsing | FloorPlanCAD, MSD, CubiASA | Gemini 2.5 Flash (zero-shot) |
-| Building codes | NBC India 2016, IS 456:2000, fire codes | RAG: ChromaDB + bge-large-en-v1.5 |
-| Point cloud → BIM | HePIC dataset | BIM-Net++ |
-| Concrete defects | CODEBRIM, CONCORDE | YOLOv11-seg / SAM 2 |
-| PPE detection (stretch) | Roboflow Hard Hat Workers | YOLOv8 |
-| Cost forecasting | Kaggle datasets, CIDC indices | Exponential Smoothing (Current) / Prophet (Planned) |
+| Blueprint parsing | Uploaded blueprint images/PDFs | Gemini 2.5 Flash (zero-shot) |
+| Building codes | NBC India 2016 Part IV, IS 456:2000 | RAG: numpy + `gemini-embedding-001` |
+| Concrete/structural defects | Site photos | Gemini 2.5 Flash zero-shot VLM (YOLOv11-seg/SAM2 fine-tune is roadmap) |
+| PPE detection | Site photos, SH17-informed prompts | Gemini 2.5 Flash zero-shot VLM |
+| Cost forecasting | Synthetic demo data | Exponential Smoothing (Current) / Prophet (Planned) |
 
 ---
 
@@ -153,7 +150,6 @@ Create `backend/.env`:
 ```env
 GEMINI_API_KEY=your_google_ai_studio_key_here
 CHROMA_PERSIST_DIR=./data/chroma_db
-EMBEDDING_MODEL=BAAI/bge-large-en-v1.5
 DEMO_SEED=42 # Optional: Set to pin the Monte Carlo RNG for reproducible demo numbers
 ```
 

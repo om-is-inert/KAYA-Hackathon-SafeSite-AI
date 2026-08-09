@@ -49,7 +49,7 @@ export default function Team() {
           />
         </div>
         <div className="team-tagline-container">
-          <span className="team-tagline">Compliance · Vision · Foresight — one team.</span>
+          <span className="team-tagline">Compliance · Vision · Foresight  -  one team.</span>
         </div>
       </section>
 

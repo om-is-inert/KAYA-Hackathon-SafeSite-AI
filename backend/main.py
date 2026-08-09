@@ -9,10 +9,11 @@ import logging
 import uuid
 from pathlib import Path
 
+import asyncio
+
 from fastapi import FastAPI, File, Form, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response, JSONResponse
-from fastapi.staticfiles import StaticFiles
 
 from backend import config
 from backend.models import (
@@ -33,20 +34,33 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Serve frontend
-frontend_dir = Path(__file__).resolve().parent.parent / "frontendv1"
-if frontend_dir.exists():
-    app.mount("/static", StaticFiles(directory=str(frontend_dir), html=True), name="static")
 
-    @app.get("/")
-    async def serve_root():
-        from fastapi.responses import RedirectResponse
-        return RedirectResponse(url="/static/index.html")
+@app.on_event("startup")
+async def _build_index_if_needed():
+    """Build the embedding index from PDFs in the background if it doesn't exist yet.
+
+    Runs as a background task (not awaited) so the health check endpoint responds
+    immediately on Render instead of timing out while Gemini embeds the PDFs.
+    """
+    asyncio.create_task(_ingest_background())
+
+
+async def _ingest_background():
+    index_path = Path(config.CHROMA_PERSIST_DIR).parent / "codes_index.npz"
+    if index_path.exists():
+        return
+    logger.info("Index not found — ingesting building code PDFs...")
+    try:
+        kb = get_knowledge_base()
+        kb.ingest_directory(config.BUILDING_CODES_DIR)
+        logger.info("Index built: %d chunks", kb.doc_count)
+    except Exception:
+        logger.exception("Background PDF ingest failed")
+
 
 # ── Knowledge Base (lazy init) ──────────────────────────────────────
 _kb = None

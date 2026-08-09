@@ -1,5 +1,5 @@
 """
-SafeSite AI — Layer 2 — Building Defect Classifier
+SafeSite AI  -  Layer 2  -  Building Defect Classifier
 Adapted from: BD3 Dataset (https://github.com/Praveenkottari/BD3-Dataset)
 Paper: Kottari & Arjunan, "BD3: Building Defects Detection Dataset",
        ACM BuildSys '24 (DOI: 10.1145/3671127.3698789)
@@ -53,13 +53,13 @@ BD3_SEVERITY = {
 
 # IS 456 / NBC 2016 code references per BD3 defect type
 BD3_CODE_REFERENCES = {
-    "major_crack": "IS 456 §35.3.2 — Crack width exceeds 0.3mm (moderate exposure); structural integrity compromised",
-    "minor_crack": "IS 456 §35.3.2 — Hairline/surface cracks detected; monitor for width propagation over 28 days",
-    "spalling": "IS 456 §35.4 — Concrete cover delamination with exposed aggregate; risk of rebar corrosion",
-    "peeling": "IS 456 §14.1 — Surface finish deterioration; re-apply protective coating per NBC 2016 §7.2",
-    "algae": "NBC 2016 §7.4 — Biological growth indicating persistent moisture ingress; waterproofing failure",
-    "stain": "NBC 2016 §7.3 — Efflorescence or rust staining from water seepage through concrete matrix",
-    "normal": "No defect detected — surface condition satisfactory",
+    "major_crack": "IS 456 §35.3.2  -  Crack width exceeds 0.3mm (moderate exposure); structural integrity compromised",
+    "minor_crack": "IS 456 §35.3.2  -  Hairline/surface cracks detected; monitor for width propagation over 28 days",
+    "spalling": "IS 456 §35.4  -  Concrete cover delamination with exposed aggregate; risk of rebar corrosion",
+    "peeling": "IS 456 §14.1  -  Surface finish deterioration; re-apply protective coating per NBC 2016 §7.2",
+    "algae": "NBC 2016 §7.4  -  Biological growth indicating persistent moisture ingress; waterproofing failure",
+    "stain": "NBC 2016 §7.3  -  Efflorescence or rust staining from water seepage through concrete matrix",
+    "normal": "No defect detected  -  surface condition satisfactory",
 }
 
 # Remediation actions per BD3 defect type
@@ -80,13 +80,13 @@ BD3_CLASSIFICATION_PROMPT = """You are a building defect classification AI train
 Analyze this building surface photograph and classify ALL visible defects.
 
 The BD3 defect taxonomy is:
-1. **Algae** — Biological growth (green/black patches) from moisture
-2. **Major Crack** — Structural cracks >0.3mm wide
-3. **Minor Crack** — Hairline cracks <0.3mm
-4. **Peeling** — Paint/plaster delamination and flaking
-5. **Spalling** — Concrete cover breaking away, exposing aggregate
-6. **Stain** — Efflorescence, rust, or water marks
-7. **Normal** — No defect visible
+1. **Algae**  -  Biological growth (green/black patches) from moisture
+2. **Major Crack**  -  Structural cracks >0.3mm wide
+3. **Minor Crack**  -  Hairline cracks <0.3mm
+4. **Peeling**  -  Paint/plaster delamination and flaking
+5. **Spalling**  -  Concrete cover breaking away, exposing aggregate
+6. **Stain**  -  Efflorescence, rust, or water marks
+7. **Normal**  -  No defect visible
 
 For each region/defect found, provide:
 1. BD3 defect class (from the 7 classes above)

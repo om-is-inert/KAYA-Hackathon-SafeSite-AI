@@ -1,5 +1,5 @@
 """
-SafeSite AI — Layer 2 — Scan-to-BIM Bridge
+SafeSite AI  -  Layer 2  -  Scan-to-BIM Bridge
 Adapted from: LTTM/Scan-to-BIM (https://github.com/LTTM/Scan-to-BIM)
 Paper: Campagnolo et al., "Fully Automated Scan-to-BIM via Point Cloud
        Instance Segmentation", IEEE ICIP 2023.
@@ -50,39 +50,39 @@ TOLERANCE_THRESHOLDS = {
     "wall": {
         "thickness_tolerance_mm": 10,
         "plumb_tolerance_mm_per_m": 3,
-        "reference": "IS 456 §11.1 — Dimensional tolerance for concrete walls",
+        "reference": "IS 456 §11.1  -  Dimensional tolerance for concrete walls",
     },
     "column": {
         "position_tolerance_mm": 15,
         "cross_section_tolerance_mm": 6,
         "plumb_tolerance_mm_per_3m": 15,
-        "reference": "IS 456 §11.1.1 — Column dimensional accuracy",
+        "reference": "IS 456 §11.1.1  -  Column dimensional accuracy",
     },
     "beam": {
         "depth_tolerance_mm": 6,
         "width_tolerance_mm": 6,
         "alignment_tolerance_mm": 12,
-        "reference": "IS 456 §11.1.2 — Beam dimensional tolerance",
+        "reference": "IS 456 §11.1.2  -  Beam dimensional tolerance",
     },
     "floor": {
         "level_tolerance_mm": 15,
         "thickness_tolerance_mm": 10,
-        "reference": "IS 456 §11.2 — Slab level tolerance",
+        "reference": "IS 456 §11.2  -  Slab level tolerance",
     },
     "door": {
         "width_tolerance_mm": 5,
         "height_tolerance_mm": 5,
-        "reference": "NBC 2016 §4.6 — Door dimensions for fire egress",
+        "reference": "NBC 2016 §4.6  -  Door dimensions for fire egress",
     },
     "window": {
         "area_tolerance_percent": 5,
-        "reference": "NBC 2016 §8.4 — Ventilation opening area requirements",
+        "reference": "NBC 2016 §8.4  -  Ventilation opening area requirements",
     },
     "stairs": {
         "riser_tolerance_mm": 3,
         "tread_tolerance_mm": 5,
         "width_tolerance_mm": 10,
-        "reference": "NBC 2016 §4.4.2 — Staircase dimensional compliance",
+        "reference": "NBC 2016 §4.4.2  -  Staircase dimensional compliance",
     },
 }
 
@@ -224,7 +224,7 @@ class ScanToBIMBridge:
                 # Find applicable tolerance
                 tol_key = dim_key.replace("_mm", "_tolerance_mm")
                 tolerance = tolerances.get(tol_key, 15)  # default 15mm
-                code_ref = tolerances.get("reference", f"IS 456 §11 — General dimensional tolerance")
+                code_ref = tolerances.get("reference", f"IS 456 §11  -  General dimensional tolerance")
 
                 within = deviation <= tolerance
 

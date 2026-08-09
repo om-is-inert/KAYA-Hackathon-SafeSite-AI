@@ -1,5 +1,5 @@
 """
-SafeSite AI — Layer 2 — PPE Safety Detector
+SafeSite AI  -  Layer 2  -  PPE Safety Detector
 Adapted from: SH17 Dataset (https://github.com/ahmadmughees/SH17dataset)
 Paper: Ahmad & Rahimi, "SH17: A Dataset for Human Safety and PPE Detection",
        Journal of Safety Science and Resilience, 2024.
@@ -25,7 +25,7 @@ from typing import Optional
 import google.generativeai as genai
 
 from backend.config import GEMINI_API_KEY, VLM_MODEL
-from backend.json_utils import parse_gemini_json
+from backend.json_utils import parse_gemini_json, get_or_default
 
 logger = logging.getLogger(__name__)
 genai.configure(api_key=GEMINI_API_KEY)
@@ -40,13 +40,13 @@ SH17_CLASSES = {
 
 # Mandatory PPE items per NBC 2016 Part IV
 MANDATORY_PPE = {
-    "helmet": "NBC 2016 §4.4.1 — Hard hat mandatory on all active construction sites",
-    "safety-vest": "NBC 2016 §4.4.2 — High-visibility vest required for all ground workers",
-    "gloves": "IS 3696 Part II — Hand protection required when handling rebar/formwork",
-    "shoes": "IS 11226 — Safety footwear (steel-toe) required on active construction zones",
-    "glasses": "IS 5983 — Eye protection required in welding/cutting/grinding zones",
-    "face-guard": "IS 8521 — Face shield required for grinding/welding operations",
-    "ear-mufs": "IS 9167 — Hearing protection required in zones exceeding 85 dB",
+    "helmet": "NBC 2016 §4.4.1  -  Hard hat mandatory on all active construction sites",
+    "safety-vest": "NBC 2016 §4.4.2  -  High-visibility vest required for all ground workers",
+    "gloves": "IS 3696 Part II  -  Hand protection required when handling rebar/formwork",
+    "shoes": "IS 11226  -  Safety footwear (steel-toe) required on active construction zones",
+    "glasses": "IS 5983  -  Eye protection required in welding/cutting/grinding zones",
+    "face-guard": "IS 8521  -  Face shield required for grinding/welding operations",
+    "ear-mufs": "IS 9167  -  Hearing protection required in zones exceeding 85 dB",
 }
 
 PPE_DETECTION_PROMPT = """You are a construction site safety AI specialist trained on the SH17 dataset
@@ -84,7 +84,7 @@ Return ONLY valid JSON:
       "violations": [
         {
           "missing_item": "gloves",
-          "code_reference": "IS 3696 Part II — Hand protection required when handling formwork",
+          "code_reference": "IS 3696 Part II  -  Hand protection required when handling formwork",
           "severity": "HIGH",
           "recommendation": "Provide heat-resistant gloves before concrete pouring"
         }
@@ -178,6 +178,10 @@ async def _detect_ppe_vlm(
     result["sh17_classes_used"] = list(SH17_CLASSES.values())
     result["dataset_source"] = "SH17 (8,099 images, 75,994 annotations, 17 classes)"
     result["image_filename"] = str(image_path) if image_path else "uploaded_image"
+    result["site_safety_score"] = get_or_default(result, "site_safety_score", 0)
+    for worker in result.get("workers", []):
+        worker["location"] = get_or_default(worker, "location", "Not specified")
+        worker["compliance_status"] = get_or_default(worker, "compliance_status", "UNKNOWN")
 
     return result
 

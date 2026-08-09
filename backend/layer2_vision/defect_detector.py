@@ -1,5 +1,5 @@
 """
-SafeSite AI — Layer 2 — Defect Detector
+SafeSite AI  -  Layer 2  -  Defect Detector
 Stage 1: VLM-based defect analysis on site photos via Gemini (zero-shot fallback).
 Stage 2: YOLOv11-seg / SAM 2 fine-tuned models.
 """
@@ -18,7 +18,7 @@ import google.generativeai as genai
 
 from backend.config import GEMINI_API_KEY, VLM_MODEL
 from backend.models import Defect, DefectReport, DefectType, Severity
-from backend.json_utils import parse_gemini_json
+from backend.json_utils import parse_gemini_json, get_or_default
 
 logger = logging.getLogger(__name__)
 genai.configure(api_key=GEMINI_API_KEY)
@@ -47,7 +47,7 @@ Return ONLY valid JSON:
       "confidence": 0.85,
       "location": "Upper-left quadrant, vertical crack on column",
       "description": "Structural crack approximately 2mm wide...",
-      "code_reference": "IS 456 §35.3 — Crack width limit 0.3mm",
+      "code_reference": "IS 456 §35.3  -  Crack width limit 0.3mm",
       "remediation": "Inject epoxy resin...",
       "bounding_box": {"x": 0.1, "y": 0.15, "w": 0.2, "h": 0.4}
     }
@@ -136,24 +136,24 @@ async def _detect_defects_vlm(
 
     defects = []
     for d in result.get("defects", []):
-        dtype_str = d.get("defect_type", "Other")
+        dtype_str = get_or_default(d, "defect_type", "Other")
         try:
             dtype = DefectType(dtype_str)
         except ValueError:
             dtype = DefectType.OTHER
         try:
-            sev = Severity(d.get("severity", "MEDIUM").upper())
+            sev = Severity(get_or_default(d, "severity", "MEDIUM").upper())
         except ValueError:
             sev = Severity.MEDIUM
 
         defects.append(Defect(
             id=f"D{uuid.uuid4().hex[:6].upper()}",
             defect_type=dtype, severity=sev,
-            confidence=float(d.get("confidence", 0.5)),
-            location=d.get("location", ""),
-            description=d.get("description", ""),
-            code_reference=d.get("code_reference", ""),
-            remediation=d.get("remediation", ""),
+            confidence=float(get_or_default(d, "confidence", 0.5)),
+            location=get_or_default(d, "location", "Not specified"),
+            description=get_or_default(d, "description", "Not specified"),
+            code_reference=get_or_default(d, "code_reference", ""),
+            remediation=get_or_default(d, "remediation", "Not specified"),
             bounding_box=d.get("bounding_box"),
         ))
 
@@ -164,7 +164,7 @@ async def _detect_defects_vlm(
         image_filename=str(image_path) if image_path else "uploaded_image",
         total_defects=len(defects), critical_count=crit, high_count=high,
         defects=defects,
-        overall_condition=result.get("overall_condition", "Unknown"),
+        overall_condition=get_or_default(result, "overall_condition", "Unknown"),
         estimated_repair_cost=result.get("estimated_repair_cost"),
         estimated_repair_time=result.get("estimated_repair_time"),
     )

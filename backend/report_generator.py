@@ -1,5 +1,5 @@
 """
-SafeSite AI — PDF Report Generator
+SafeSite AI  -  PDF Report Generator
 Generates downloadable PDF reports using fpdf2.
 """
 
@@ -28,7 +28,7 @@ class SafeSiteReport(FPDF):
     def header(self):
         self.set_font("Helvetica", "B", 16)
         self.set_text_color(30, 30, 60)
-        self.cell(0, 10, "SafeSite AI — Inspection Report", align="C", new_x="LMARGIN", new_y="NEXT")
+        self.cell(0, 10, "SafeSite AI  -  Inspection Report", align="C", new_x="LMARGIN", new_y="NEXT")
         self.set_font("Helvetica", "", 9)
         self.set_text_color(120, 120, 120)
         self.cell(0, 5, f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}", align="C", new_x="LMARGIN", new_y="NEXT")
@@ -70,7 +70,7 @@ def generate_compliance_pdf(result: ComplianceResult) -> bytes:
         pdf.set_fill_color(*color)
         pdf.set_text_color(255, 255, 255)
         pdf.set_font("Helvetica", "B", 10)
-        pdf.cell(0, 7, f"  [{v.severity.value}] {v.id} — {v.exact_location}", fill=True, new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(0, 7, f"  [{v.severity.value}] {v.id}  -  {v.exact_location}", fill=True, new_x="LMARGIN", new_y="NEXT")
 
         pdf.set_text_color(60, 60, 60)
         pdf.set_font("Helvetica", "", 10)
@@ -93,7 +93,7 @@ def generate_defect_pdf(report: DefectReport) -> bytes:
 
     pdf.set_font("Helvetica", "B", 14)
     pdf.set_text_color(30, 30, 60)
-    pdf.cell(0, 10, "Vision Engine — Defect Report", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(0, 10, "Vision Engine  -  Defect Report", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(3)
 
     pdf.set_font("Helvetica", "", 11)
@@ -133,7 +133,7 @@ def generate_foresight_pdf(report: ForesightReport) -> bytes:
     # Title
     pdf.set_font("Helvetica", "B", 14)
     pdf.set_text_color(30, 30, 60)
-    pdf.cell(0, 10, "Foresight Engine — Risk & Optimization Report", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(0, 10, "Foresight Engine  -  Risk & Optimization Report", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(3)
 
     # Summary
@@ -163,7 +163,7 @@ def generate_foresight_pdf(report: ForesightReport) -> bytes:
 
             pdf.set_text_color(255, 255, 255)
             pdf.set_font("Helvetica", "B", 10)
-            pdf.cell(0, 7, f"  {rs.scenario} — P={rs.probability:.0%}", fill=True, new_x="LMARGIN", new_y="NEXT")
+            pdf.cell(0, 7, f"  {rs.scenario}  -  P={rs.probability:.0%}", fill=True, new_x="LMARGIN", new_y="NEXT")
 
             pdf.set_text_color(60, 60, 60)
             pdf.set_font("Helvetica", "", 10)

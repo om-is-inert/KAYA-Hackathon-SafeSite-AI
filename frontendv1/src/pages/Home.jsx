@@ -121,7 +121,7 @@ function Home() {
             </div>
             <div className="overview-right">
               <h3 className="statement-text">
-                Before the first beam goes up, SafeSite AI reviews your site plans and flags defects that would otherwise surface mid-build — when they're far more expensive to fix.
+                Before the first beam goes up, SafeSite AI reviews your site plans and flags defects that would otherwise surface mid-build  -  when they're far more expensive to fix.
               </h3>
               <Link to="/how-it-works" className="nav-cta cta-large">See How It Works</Link>
             </div>
@@ -133,9 +133,9 @@ function Home() {
                 <img src={featureImage1} alt="Compliance Engine" />
               </div>
               <div className="feature-text">
-                <span className="feature-eyebrow">01 — Compliance Engine</span>
+                <span className="feature-eyebrow">01  -  Compliance Engine</span>
                 <p className="feature-body">
-                  Automatically checks site plans against building codes and safety regulations — catching violations before inspectors do.
+                  Automatically checks site plans against building codes and safety regulations  -  catching violations before inspectors do.
                 </p>
               </div>
             </div>
@@ -143,7 +143,7 @@ function Home() {
             {/* Block 2 */}
             <div className="feature-block feature-block-fade feature-reverse">
               <div className="feature-text">
-                <span className="feature-eyebrow">02 — Vision Engine</span>
+                <span className="feature-eyebrow">02  -  Vision Engine</span>
                 <p className="feature-body">
                   Computer vision scans job site imagery in real time, flagging structural defects human inspectors miss.
                 </p>
@@ -159,7 +159,7 @@ function Home() {
                 <img src={featureImage3} alt="Foresight Engine" />
               </div>
               <div className="feature-text">
-                <span className="feature-eyebrow">03 — Foresight Engine</span>
+                <span className="feature-eyebrow">03  -  Foresight Engine</span>
                 <p className="feature-body">
                   Predicts where delays and defects are likely to occur next, based on patterns across thousands of past builds.
                 </p>

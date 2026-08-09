@@ -20,7 +20,7 @@ The results below demonstrate this loop is not just architected but functionally
 
 ## Layer 1 — Compliance Engine
 
-**Pipeline:** Blueprint image → VLM spatial extraction (Gemini) → RAG retrieval against National Building Code 2016 Part IV (ChromaDB + bge-large-en-v1.5) → automated cross-reference against retrieved code clauses.
+**Pipeline:** Blueprint image → VLM spatial extraction (Gemini) → RAG retrieval against National Building Code 2016 Part IV (numpy + `gemini-embedding-001`) → automated cross-reference against retrieved code clauses.
 
 **Verified capabilities:**
 - Accurately extracted labeled spatial measurements from a floor plan (hallway width, door width, staircase width) with correct units
@@ -58,7 +58,7 @@ The results below demonstrate this loop is not just architected but functionally
 
 ## Layer 3 — Foresight Engine & Cross-Layer Feedback Loop
 
-**Pipeline:** Monte Carlo simulation (10,000 iterations, triangular delay distributions across rework, weather, supply chain, and labor risk) → linear-programming-based resource reallocation, automatically re-triggered whenever Layer 1 or Layer 2 produces new findings.
+**Pipeline:** Monte Carlo simulation (10,000 iterations, triangular delay distributions across rework, weather, supply chain, and labor risk) → MILP-based resource reallocation, automatically re-triggered whenever Layer 1 or Layer 2 produces new findings.
 
 **This is the result that matters most: proof the system is one interconnected loop, not three separate tools.**
 
@@ -80,11 +80,11 @@ We believe transparency about implementation stage is a strength, not a weakness
 |---|---|---|
 | Layer 1 spatial extraction & compliance | Fully functional, VLM zero-shot (Gemini) | Same approach scales directly; would add fine-tuned extraction for CAD-native files |
 | Layer 2 defect/PPE detection | Fully functional, VLM zero-shot (Gemini) | Fine-tuned YOLOv11-seg / SAM2 on CODEBRIM/SH17 datasets for pixel-level masks; fallback architecture already in place in code |
-| Layer 3 resource optimizer | Functional, linear-programming-based (`scipy.optimize.linprog`) | Full MILP formulation with integer day-allocation and multi-resource concurrent scheduling constraints |
+| Layer 3 resource optimizer | Functional, MILP-based (`scipy.optimize.milp`) with integer day-allocation | Multi-resource concurrent scheduling constraints, live cost data |
 | Layer 3 risk model | Functional Monte Carlo simulation on seeded project data | Live integration with CIDC cost indices and project-specific historical data |
 
 ---
 
 ## Validation Methodology
 
-All results above were produced by an automated end-to-end test exercising the real API surface — blueprint upload through Gemini extraction, live ChromaDB retrieval against ingested code PDFs, live compliance/defect/PPE inference, and live feedback-loop recalculation. No step was mocked, stubbed, or hand-computed.
+All results above were produced by an automated end-to-end test exercising the real API surface — blueprint upload through Gemini extraction, live numpy+Gemini-embedding retrieval against ingested code PDFs, live compliance/defect/PPE inference, and live feedback-loop recalculation. No step was mocked, stubbed, or hand-computed.

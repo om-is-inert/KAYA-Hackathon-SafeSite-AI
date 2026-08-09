@@ -33,6 +33,31 @@ def repair_json(text: str) -> str:
     return text
 
 
+def get_or_default(d: dict, key: str, default: Any) -> Any:
+    """dict.get() that also falls back on an explicit `null`/None value.
+
+    Gemini sometimes returns `"field": null` instead of omitting the key
+    entirely, which defeats a plain `.get(key, default)` call.
+    """
+    value = d.get(key)
+    return default if value is None else value
+
+
+def _strip_em_dashes(value: Any) -> Any:
+    """Recursively replace em-dashes with a plain hyphen in all string values.
+
+    Gemini's free-text fields (descriptions, fix suggestions) sometimes use
+    em-dashes, which don't match the site's plain typographic style.
+    """
+    if isinstance(value, str):
+        return value.replace("—", " - ")
+    if isinstance(value, list):
+        return [_strip_em_dashes(v) for v in value]
+    if isinstance(value, dict):
+        return {k: _strip_em_dashes(v) for k, v in value.items()}
+    return value
+
+
 def parse_gemini_json(raw_text: str, fallback: dict[str, Any] | None = None) -> dict[str, Any]:
     """Multi-pass JSON parser with repair for Gemini responses.
 
@@ -45,14 +70,14 @@ def parse_gemini_json(raw_text: str, fallback: dict[str, Any] | None = None) -> 
 
     # First pass: try as-is
     try:
-        return json.loads(cleaned)
+        return _strip_em_dashes(json.loads(cleaned))
     except json.JSONDecodeError:
         pass
 
     # Second pass: try to repair common Gemini quirks
     repaired = repair_json(cleaned)
     try:
-        return json.loads(repaired)
+        return _strip_em_dashes(json.loads(repaired))
     except json.JSONDecodeError:
         pass
 
@@ -61,7 +86,7 @@ def parse_gemini_json(raw_text: str, fallback: dict[str, Any] | None = None) -> 
     if json_match:
         fragment = repair_json(json_match.group())
         try:
-            return json.loads(fragment)
+            return _strip_em_dashes(json.loads(fragment))
         except json.JSONDecodeError:
             pass
 

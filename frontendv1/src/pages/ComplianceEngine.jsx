@@ -8,10 +8,21 @@ import { useGSAP } from '@gsap/react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import './ComplianceEngine.css';
 import { useWarmVideo } from '../hooks/useWarmVideo';
+import AnalysisProgress from '../components/AnalysisProgress';
+
+const ANALYSIS_STEPS = [
+  'Reading blueprint geometry',
+  'Extracting measurements via Gemini Vision',
+  'Retrieving relevant code clauses',
+  'Cross-checking against NBC & IS 456',
+  'Compiling violation report',
+];
+
+const na = (v) => (v === null || v === undefined || v === '' ? 'Not specified' : v);
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
-const API_BASE = 'http://localhost:8000';
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
 
 export default function ComplianceEngine() {
   const [openStat, setOpenStat] = useState(null);
@@ -40,7 +51,7 @@ export default function ComplianceEngine() {
   const toggleStat = (i) => setOpenStat(prev => (prev === i ? null : i));
 
   const statDetails = [
-    "Aggregates results across all three verification layers — design compliance, on-site inspection, and predictive risk modeling — into a single pass/fail signal for the project.",
+    "Aggregates results across all three verification layers  -  design compliance, on-site inspection, and predictive risk modeling  -  into a single pass/fail signal for the project.",
     "Cross-checks the uploaded blueprint against your selected building codes, catching code violations before construction begins.",
     "Computer vision compares live site imagery against the approved plan as work progresses, flagging structural deviations as they happen.",
     "Runs 10,000 Monte Carlo simulations against historical build data to estimate the likelihood of hitting your project deadline."
@@ -211,29 +222,23 @@ export default function ComplianceEngine() {
             {result && result.violations && result.violations.length > 0 ? (
               <div className="ce-violations-list">
                 {result.violations.map((v, i) => (
-                  <div key={v.id || i} className="ce-violation-card" style={{
-                    padding: '1.2rem 1.5rem',
-                    borderLeft: `3px solid ${severityColor(v.severity)}`,
-                    background: '#FAFAFA',
-                    marginBottom: '0.75rem',
-                    borderRadius: '0 4px 4px 0',
-                  }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                      <span style={{ fontSize: '13px', fontWeight: 700, color: severityColor(v.severity), textTransform: 'uppercase', letterSpacing: '0.1em' }}>{v.severity}</span>
-                      <span style={{ fontSize: '11px', color: '#999', fontFamily: 'monospace' }}>{v.id}</span>
+                  <div key={v.id || i} className="ce-violation-card">
+                    <div className="ce-violation-header">
+                      <span className="ce-violation-severity" style={{ color: severityColor(v.severity) }}>{v.severity}</span>
+                      <span className="ce-violation-id">{v.id}</span>
                     </div>
-                    <p style={{ fontSize: '14px', fontWeight: 600, color: '#111', margin: '0 0 0.4rem 0' }}>{v.exact_location}</p>
-                    <p style={{ fontSize: '13px', color: '#444', margin: '0 0 0.4rem 0' }}>
-                      Measured: <strong>{v.measured_value}</strong> · Required: <strong>{v.required_value}</strong>
+                    <p className="ce-violation-location">{na(v.exact_location)}</p>
+                    <p className="ce-violation-meta">
+                      Measured: <strong>{na(v.measured_value)}</strong> &middot; Required: <strong>{na(v.required_value)}</strong>
                     </p>
-                    <p style={{ fontSize: '12px', color: '#666', margin: '0 0 0.4rem 0', fontStyle: 'italic' }}>{v.code_reference}</p>
-                    <p style={{ fontSize: '12px', color: '#555', margin: 0 }}>Fix: {v.fix_suggestion}</p>
+                    {v.code_reference && <p className="ce-violation-code">{v.code_reference}</p>}
+                    <p className="ce-violation-fix">Fix: {na(v.fix_suggestion)}</p>
                   </div>
                 ))}
               </div>
             ) : (
               <div className="ce-empty-state">
-                <span className="ce-empty-title">{result ? 'No Violations Found — All Clear' : 'No Violations Detected Yet'}</span>
+                <span className="ce-empty-title">{result ? 'No Violations Found  -  All Clear' : 'No Violations Detected Yet'}</span>
                 <span className="ce-empty-sub">{result ? `Blueprint "${result.blueprint_filename}" passed compliance checks.` : 'Upload an architectural layout to start compliance verification.'}</span>
               </div>
             )}
@@ -256,8 +261,8 @@ export default function ComplianceEngine() {
           >
             {isLoading ? (
               <>
-                <span className="ce-dropzone-text">Analyzing blueprint...</span>
-                <span className="ce-dropzone-sub">This may take 15–30 seconds while the Gemini VLM processes your file.</span>
+                <span className="ce-dropzone-text">Analyzing blueprint</span>
+                <AnalysisProgress steps={ANALYSIS_STEPS} active={isLoading} />
               </>
             ) : error ? (
               <>
@@ -267,7 +272,7 @@ export default function ComplianceEngine() {
               </>
             ) : result ? (
               <>
-                <span className="ce-dropzone-text" style={{ color: '#2E7D32' }}>✓ Analysis Complete — {result.blueprint_filename}</span>
+                <span className="ce-dropzone-text" style={{ color: '#2E7D32' }}>✓ Analysis Complete  -  {result.blueprint_filename}</span>
                 <span className="ce-dropzone-sub">{result.total_violations} violation{result.total_violations !== 1 ? 's' : ''} found · Score: {result.compliance_score}/100</span>
                 <span className="ce-dropzone-sub">Click to analyze another blueprint</span>
               </>
@@ -363,9 +368,9 @@ export default function ComplianceEngine() {
       {/* Story block */}
       <section className="ce-story-section" style={{ background: '#FAFAFA', padding: '8rem 4rem', display: 'flex', justifyContent: 'center', textAlign: 'center' }}>
         <div style={{ maxWidth: '800px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <span style={{ fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', color: '#666', margin: '0 0 1.5rem 0' }}>01 — COMPLIANCE ENGINE</span>
+          <span style={{ fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', color: '#666', margin: '0 0 1.5rem 0' }}>01  -  COMPLIANCE ENGINE</span>
           <h3 style={{ fontSize: '2.2rem', fontWeight: 600, lineHeight: 1.3, color: '#111', letterSpacing: '-0.02em', margin: '0 0 2.5rem 0' }}>
-            Automatically checks site plans against building codes and safety regulations — catching violations before inspectors do.
+            Automatically checks site plans against building codes and safety regulations  -  catching violations before inspectors do.
           </h3>
           <Link to="/how-it-works" className="nav-cta cta-large">See How It Works</Link>
         </div>
