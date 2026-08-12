@@ -14,36 +14,6 @@ gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
 
-// Score ring SVG component
-function ScoreRing({ score, label, color, weight }) {
-  const r = 36;
-  const circ = 2 * Math.PI * r;
-  const pct = Math.min(Math.max(score, 0), 100) / 100;
-  const dash = pct * circ;
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
-      <svg width="88" height="88" viewBox="0 0 88 88" style={{ transform: 'rotate(-90deg)' }}>
-        <circle cx="44" cy="44" r={r} fill="none" stroke="#F0F0F0" strokeWidth="7" />
-        <circle
-          cx="44" cy="44" r={r} fill="none"
-          stroke={color} strokeWidth="7"
-          strokeDasharray={`${dash} ${circ}`}
-          strokeLinecap="round"
-          style={{ transition: 'stroke-dasharray 0.8s ease' }}
-        />
-      </svg>
-      <div style={{ textAlign: 'center', marginTop: '-4px' }}>
-        <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#111', letterSpacing: '-0.02em' }}>
-          {score.toFixed(0)}<span style={{ fontSize: '0.75rem', fontWeight: 400, color: '#999' }}>/100</span>
-        </div>
-        <div style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#888' }}>{label}</div>
-        <div style={{ fontSize: '10px', color: '#bbb', marginTop: '1px' }}>{weight} weight</div>
-      </div>
-    </div>
-  );
-}
-
 function Home() {
   const containerRef  = useRef();
   const heroRef        = useRef();
@@ -53,7 +23,7 @@ function Home() {
 
   // ── Health Dashboard state ─────────────────────────────────────────
   const [health, setHealth] = useState(null);
-  const [backendOnline, setBackendOnline] = useState(null); // null = checking, true/false
+  const [backendOnline, setBackendOnline] = useState(null);
   const [isTriggering, setIsTriggering] = useState(false);
   const [loopMsg, setLoopMsg] = useState(null);
 
@@ -72,7 +42,7 @@ function Home() {
 
   useEffect(() => {
     fetchHealth();
-    const interval = setInterval(fetchHealth, 30000); // poll every 30s
+    const interval = setInterval(fetchHealth, 30000);
     return () => clearInterval(interval);
   }, [fetchHealth]);
 
@@ -91,7 +61,6 @@ function Home() {
     }
   }, [fetchHealth]);
 
-  /* Claim the pre-warmed video from the pool — runs before GSAP */
   useWarmVideo(heroVideo, videoRef, videoWrapRef, 'hero-video');
 
   useGSAP(() => {
@@ -138,12 +107,6 @@ function Home() {
     );
   }, { scope: containerRef });
 
-  const overallColor = (score) => {
-    if (score >= 80) return '#2E7D32';
-    if (score >= 50) return '#E65100';
-    return '#D32F2F';
-  };
-
   return (
     <div ref={containerRef} className="app-container page-transition">
 
@@ -169,19 +132,16 @@ function Home() {
             <p>AI-Powered Site Inspections That<br />Catch Defects Before They Cost You</p>
           </div>
 
-          {/* Connection status pill — lives inside the hero overlay */}
+          {/* Connection status — minimal text label, no colored pill */}
           <div style={{
             position: 'absolute', bottom: '2rem', right: '2rem', zIndex: 10,
             display: 'flex', alignItems: 'center', gap: '0.5rem',
-            background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)',
-            padding: '0.45rem 0.9rem', borderRadius: '100px',
-            fontSize: '12px', fontWeight: 600, color: '#fff', letterSpacing: '0.04em',
+            fontSize: '11px', fontWeight: 600, color: 'rgba(255,255,255,0.6)',
+            letterSpacing: '0.12em', textTransform: 'uppercase',
           }}>
             <span style={{
-              width: '8px', height: '8px', borderRadius: '50%', flexShrink: 0,
-              background: backendOnline === null ? '#888' : backendOnline ? '#4CAF50' : '#D32F2F',
-              boxShadow: backendOnline ? '0 0 6px #4CAF50' : 'none',
-              transition: 'background 0.4s ease',
+              width: '6px', height: '6px', flexShrink: 0,
+              background: backendOnline === false ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.8)',
             }} />
             {backendOnline === null ? 'Connecting...' : backendOnline ? 'Backend Online' : 'Backend Offline'}
           </div>
@@ -189,22 +149,21 @@ function Home() {
       </div>
 
       {/* Project Health Dashboard */}
-      <section className="health-dashboard" style={{
-        background: '#fff', padding: '5rem 4rem', borderBottom: '1px solid #EAEAEA',
-      }}>
-        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-          {/* Header row */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '3rem', flexWrap: 'wrap', gap: '1rem' }}>
+      <section className="health-dashboard ce-workspace-section">
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+
+          {/* Header row — matches ce-workspace-top pattern */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4rem', flexWrap: 'wrap', gap: '1rem', borderBottom: '1px solid #EAEAEA', paddingBottom: '2rem' }}>
             <div>
-              <span style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', color: '#999' }}>Live Project Intelligence</span>
-              <h2 style={{ fontSize: '2rem', fontWeight: 700, color: '#111', letterSpacing: '-0.02em', margin: '0.5rem 0 0 0' }}>
-                Project Health Dashboard
+              <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', color: '#999' }}>Live Project Intelligence</span>
+              <h2 style={{ fontFamily: "'Inter', sans-serif", fontSize: 'clamp(28px, 3vw, 42px)', fontWeight: 200, color: '#111', letterSpacing: '-0.01em', margin: '0.5rem 0 0 0', lineHeight: 1.2 }}>
+                Project Health
               </h2>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
               <button
                 onClick={fetchHealth}
-                style={{ background: 'none', border: '1px solid #EAEAEA', borderRadius: '6px', padding: '0.5rem 1rem', cursor: 'pointer', fontSize: '12px', color: '#666', fontWeight: 600 }}
+                style={{ background: 'none', border: '1px solid #D0D0D0', padding: '0.6rem 1.2rem', cursor: 'pointer', fontSize: '13px', color: '#666', fontWeight: 500, fontFamily: "'Inter', sans-serif" }}
               >
                 ↺ Refresh
               </button>
@@ -219,79 +178,73 @@ function Home() {
             </div>
           </div>
 
+          {/* Loop message — on-theme plain text */}
           {loopMsg && (
-            <div style={{
-              padding: '0.75rem 1.25rem', borderRadius: '6px', marginBottom: '2rem', fontSize: '13px',
-              background: loopMsg.ok ? '#E8F5E9' : '#FFEBEE', color: loopMsg.ok ? '#2E7D32' : '#D32F2F', fontWeight: 500,
-            }}>
+            <p style={{ fontSize: '13px', color: '#555', marginBottom: '2rem', fontFamily: "'Inter', sans-serif", borderTop: '1px solid #EAEAEA', paddingTop: '0.75rem' }}>
               {loopMsg.ok ? '✓' : '✗'} {loopMsg.text}
-            </div>
+            </p>
           )}
 
           {health ? (
             <>
-              {/* Overall health banner */}
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: '2rem', padding: '2rem',
-                background: health.health_score >= 80 ? '#E8F5E9' : health.health_score >= 50 ? '#FFF3E0' : '#FFEBEE',
-                borderRadius: '12px', marginBottom: '3rem', flexWrap: 'wrap',
-              }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.15em', color: '#888', fontWeight: 700, marginBottom: '0.4rem' }}>
-                    Overall Health Score
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
-                    <span style={{ fontSize: '3.5rem', fontWeight: 900, color: overallColor(health.health_score), letterSpacing: '-0.03em', lineHeight: 1 }}>
-                      {health.health_score.toFixed(0)}
-                    </span>
-                    <span style={{ fontSize: '1.2rem', color: '#aaa' }}>/100</span>
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: '3rem', flexWrap: 'wrap' }}>
-                  <ScoreRing score={health.compliance_score} label="Compliance" color={overallColor(health.compliance_score)} weight="35%" />
-                  <ScoreRing score={health.vision_score} label="Vision" color={overallColor(health.vision_score)} weight="35%" />
-                  <ScoreRing score={health.foresight_score} label="Foresight" color={overallColor(health.foresight_score)} weight="30%" />
-                </div>
-              </div>
-
-              {/* Detail counters */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+              {/* Score grid — plain numbers, no colored backgrounds or rings */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0', borderTop: '1px solid #EAEAEA', marginBottom: '4rem' }}>
                 {[
-                  { label: 'Active Violations', value: health.active_violations, warn: health.active_violations > 0 },
-                  { label: 'Active Defects', value: health.active_defects, warn: health.active_defects > 0 },
-                  { label: 'Active Risks', value: health.active_risks, warn: health.active_risks > 2 },
-                  { label: 'Feedback Loop', value: health.feedback_loop_active ? 'Active' : 'Idle', warn: !health.feedback_loop_active },
-                  { label: 'Last Scan', value: health.last_scan_timestamp ? new Date(health.last_scan_timestamp).toLocaleTimeString() : 'Never', warn: false },
+                  { label: 'Overall', value: health.health_score, sub: 'composite' },
+                  { label: 'Compliance', value: health.compliance_score, sub: '35% weight' },
+                  { label: 'Vision', value: health.vision_score, sub: '35% weight' },
+                  { label: 'Foresight', value: health.foresight_score, sub: '30% weight' },
                 ].map((item, i) => (
                   <div key={i} style={{
-                    padding: '1.25rem 1.5rem', background: '#FAFAFA', borderRadius: '8px',
-                    borderLeft: `3px solid ${item.warn ? '#E65100' : '#EAEAEA'}`,
+                    padding: '2rem 1.5rem',
+                    borderRight: i < 3 ? '1px solid #EAEAEA' : 'none',
+                    borderBottom: '1px solid #EAEAEA',
                   }}>
-                    <div style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.4rem' }}>{item.label}</div>
-                    <div style={{ fontSize: '1.4rem', fontWeight: 800, color: item.warn ? '#E65100' : '#111' }}>{item.value}</div>
+                    <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#999', marginBottom: '0.75rem', fontFamily: "'Inter', sans-serif" }}>
+                      {item.label}
+                    </div>
+                    <div style={{ fontSize: '2.5rem', fontWeight: 200, color: '#111', lineHeight: 1, letterSpacing: '-0.02em', fontFamily: "'Inter', sans-serif" }}>
+                      {item.value.toFixed(0)}
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#BBB', marginTop: '0.4rem', fontFamily: "'Inter', sans-serif" }}>
+                      /100 — {item.sub}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Detail counters — plain list, on-theme */}
+              <div className="ce-stats-list">
+                {[
+                  { label: 'Active Violations', value: health.active_violations },
+                  { label: 'Active Defects', value: health.active_defects },
+                  { label: 'Active Risks', value: health.active_risks },
+                  { label: 'Feedback Loop', value: health.feedback_loop_active ? 'Active' : 'Idle' },
+                  { label: 'Last Scan', value: health.last_scan_timestamp ? new Date(health.last_scan_timestamp).toLocaleTimeString() : 'Never' },
+                ].map((item, i) => (
+                  <div key={i} className="ce-stat-row" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem 0' }}>
+                    <span style={{ fontSize: '14px', color: '#111', fontFamily: "'Inter', sans-serif" }}>{item.label}</span>
+                    <span style={{ fontSize: '14px', fontWeight: 500, color: '#555', fontFamily: "'Inter', sans-serif" }}>{item.value}</span>
                   </div>
                 ))}
               </div>
             </>
           ) : (
-            <div style={{ textAlign: 'center', padding: '3rem', color: '#999' }}>
-              <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>
-                {backendOnline === false ? '⚠' : '⏳'}
-              </div>
-              <p style={{ fontSize: '14px', fontWeight: 500 }}>
+            <div style={{ padding: '4rem 0', borderTop: '1px solid #EAEAEA' }}>
+              <p style={{ fontSize: '14px', color: '#999', fontFamily: "'Inter', sans-serif", margin: 0 }}>
                 {backendOnline === false
                   ? 'Backend is offline. Start the server to see live project health.'
                   : 'Health data will appear here once you run a compliance or vision analysis.'}
               </p>
-              <p style={{ fontSize: '12px', color: '#bbb', marginTop: '0.5rem' }}>
-                Auto-refreshes every 30 seconds · Polls /api/v1/project/health
+              <p style={{ fontSize: '12px', color: '#CCC', marginTop: '0.5rem', fontFamily: "'Inter', sans-serif" }}>
+                Auto-refreshes every 30 seconds · GET /api/v1/project/health
               </p>
             </div>
           )}
         </div>
       </section>
 
-      {/* Standard white-background overview section below the hero */}
+      {/* Standard overview section */}
       <section className="overview-section">
         <div className="overview-container">
           <div className="overview-columns">
@@ -306,7 +259,6 @@ function Home() {
             </div>
           </div>
           <div className="feature-blocks">
-            {/* Block 1 */}
             <div className="feature-block feature-block-fade">
               <div className="feature-image">
                 <img src={featureImage1} alt="Compliance Engine" />
@@ -319,7 +271,6 @@ function Home() {
               </div>
             </div>
 
-            {/* Block 2 */}
             <div className="feature-block feature-block-fade feature-reverse">
               <div className="feature-text">
                 <span className="feature-eyebrow">02  -  Vision Engine</span>
@@ -332,7 +283,6 @@ function Home() {
               </div>
             </div>
 
-            {/* Block 3 */}
             <div className="feature-block feature-block-fade">
               <div className="feature-image">
                 <img src={featureImage3} alt="Foresight Engine" />

@@ -375,13 +375,13 @@ export default function ComplianceEngine() {
             onClick={() => setCodeLibOpen(o => !o)}
             style={{
               display: 'flex', alignItems: 'center', gap: '0.75rem',
-              background: 'none', border: '1px solid #EAEAEA', borderRadius: '6px',
+              background: 'none', border: '1px solid #D0D0D0',
               padding: '0.75rem 1.5rem', cursor: 'pointer', fontSize: '13px',
-              fontWeight: 600, color: '#444', letterSpacing: '0.05em', textTransform: 'uppercase',
-              width: '100%', justifyContent: 'space-between',
+              fontWeight: 500, color: '#444', letterSpacing: '0.05em', textTransform: 'uppercase',
+              width: '100%', justifyContent: 'space-between', fontFamily: "'Inter', sans-serif",
             }}
           >
-            <span>⚙ Advanced: Building Code Library Manager</span>
+            <span>Advanced: Building Code Library Manager</span>
             <span style={{ fontSize: '11px', color: '#999' }}>{codeLibOpen ? '▲ Collapse' : '▼ Expand'}</span>
           </button>
 
@@ -389,13 +389,13 @@ export default function ComplianceEngine() {
             <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               {/* Current codes list */}
               <div>
-                <h3 style={{ fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#666', marginBottom: '0.75rem' }}>Ingested Codes</h3>
+                <h3 style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#999', marginBottom: '0.75rem', fontFamily: "'Inter', sans-serif" }}>Ingested Codes</h3>
                 {codeList.length === 0 ? (
-                  <p style={{ fontSize: '13px', color: '#999' }}>No codes found in library. Upload a PDF or trigger ingest.</p>
+                  <p style={{ fontSize: '13px', color: '#999', fontFamily: "'Inter', sans-serif" }}>No codes found in library. Upload a PDF or trigger ingest.</p>
                 ) : (
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                     {codeList.map((c, i) => (
-                      <span key={i} style={{ fontSize: '12px', padding: '4px 10px', background: '#F5F5F5', borderRadius: '4px', color: '#333', fontWeight: 500 }}>
+                      <span key={i} style={{ fontSize: '12px', padding: '4px 10px', border: '1px solid #D0D0D0', color: '#333', fontFamily: "'Inter', sans-serif" }}>
                         {c.name} <span style={{ color: '#999' }}>({c.size_mb} MB)</span>
                       </span>
                     ))}
@@ -424,7 +424,7 @@ export default function ComplianceEngine() {
               </div>
 
               {codeLibStatus && (
-                <p style={{ fontSize: '13px', color: codeLibStatus.startsWith('✓') ? '#2E7D32' : codeLibStatus.startsWith('✗') ? '#D32F2F' : '#444', margin: 0 }}>
+                <p style={{ fontSize: '13px', color: '#555', margin: 0, fontFamily: "'Inter', sans-serif" }}>
                   {codeLibStatus}
                 </p>
               )}

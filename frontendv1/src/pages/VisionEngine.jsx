@@ -381,13 +381,13 @@ export default function VisionEngine() {
             <button className="ce-code-btn ce-code-btn-active">IS 3764 / NBC Part 7</button>
           </div>
           {ppeReport && (
-            <div style={{ marginTop: '1.5rem', padding: '1.2rem', background: ppeReport.site_safety_score >= 80 ? '#E8F5E9' : ppeReport.site_safety_score >= 50 ? '#FFF3E0' : '#FFEBEE', borderRadius: '8px' }}>
-              <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#666', marginBottom: '0.3rem' }}>Site Safety Score</div>
-              <div style={{ fontSize: '2rem', fontWeight: 800, color: ppeReport.site_safety_score >= 80 ? '#2E7D32' : ppeReport.site_safety_score >= 50 ? '#E65100' : '#D32F2F' }}>
-                {ppeReport.site_safety_score.toFixed(0)}<span style={{ fontSize: '1rem', fontWeight: 400 }}>/100</span>
+            <div style={{ marginTop: '1.5rem', padding: '1.25rem 0', borderTop: '1px solid #EAEAEA' }}>
+              <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#999', marginBottom: '0.4rem', fontFamily: "'Inter', sans-serif" }}>Site Safety Score</div>
+              <div style={{ fontSize: '2.5rem', fontWeight: 200, color: '#111', lineHeight: 1, letterSpacing: '-0.02em', fontFamily: "'Inter', sans-serif" }}>
+                {ppeReport.site_safety_score.toFixed(0)}
               </div>
-              <div style={{ fontSize: '12px', color: '#666', marginTop: '0.3rem' }}>
-                {ppeReport.total_workers} worker{ppeReport.total_workers !== 1 ? 's' : ''} detected
+              <div style={{ fontSize: '11px', color: '#BBB', marginTop: '0.4rem', fontFamily: "'Inter', sans-serif" }}>
+                /100 — {ppeReport.total_workers} worker{ppeReport.total_workers !== 1 ? 's' : ''} detected
               </div>
             </div>
           )}
@@ -399,16 +399,14 @@ export default function VisionEngine() {
               {ppeReport.workers.map((w, i) => (
                 <div key={i} className="ce-violation-card">
                   <div className="ce-violation-header">
-                    <span className="ce-violation-severity" style={{ color: w.compliance_status === 'COMPLIANT' ? '#2E7D32' : w.compliance_status === 'PARTIAL' ? '#E65100' : '#D32F2F' }}>
-                      {w.compliance_status}
-                    </span>
+                    <span className="ce-violation-severity">{w.compliance_status}</span>
                     <span className="ce-violation-id">{w.worker_id}</span>
                   </div>
                   {w.ppe_present.length > 0 && (
-                    <p className="ce-violation-location">✓ Present: {w.ppe_present.join(', ')}</p>
+                    <p className="ce-violation-location">Present: {w.ppe_present.join(', ')}</p>
                   )}
                   {w.ppe_missing.length > 0 && (
-                    <p className="ce-violation-meta" style={{ color: '#D32F2F' }}>✗ Missing: {w.ppe_missing.join(', ')}</p>
+                    <p className="ce-violation-meta">Missing: {w.ppe_missing.join(', ')}</p>
                   )}
                   {w.location && <p className="ce-violation-fix">Location: {w.location}</p>}
                 </div>
@@ -421,7 +419,7 @@ export default function VisionEngine() {
             </div>
           ) : (
             <div className="ce-empty-state">
-              <span className="ce-empty-title">{ppeReport ? 'All Workers Compliant ✓' : 'No PPE Audit Run Yet'}</span>
+              <span className="ce-empty-title">{ppeReport ? 'All Workers Compliant' : 'No PPE Audit Run Yet'}</span>
               <span className="ce-empty-sub">{ppeReport ? `${ppeReport.total_workers} worker(s) scanned — no violations found.` : 'Upload a site photo with workers to run the PPE safety audit.'}</span>
             </div>
           )}
@@ -442,13 +440,13 @@ export default function VisionEngine() {
             </>
           ) : ppeError ? (
             <>
-              <span className="ce-dropzone-text" style={{ color: '#D32F2F' }}>Audit Failed</span>
-              <span className="ce-dropzone-sub" style={{ color: '#D32F2F' }}>{ppeError}</span>
+              <span className="ce-dropzone-text">Audit Failed</span>
+              <span className="ce-dropzone-sub">{ppeError}</span>
               <span className="ce-dropzone-sub">Click to try again</span>
             </>
           ) : ppeReport ? (
             <>
-              <span className="ce-dropzone-text" style={{ color: ppeReport.site_safety_score >= 80 ? '#2E7D32' : '#E65100' }}>✓ PPE Audit Complete — Score: {ppeReport.site_safety_score.toFixed(0)}/100</span>
+              <span className="ce-dropzone-text">PPE Audit Complete — Score: {ppeReport.site_safety_score.toFixed(0)}/100</span>
               <span className="ce-dropzone-sub">{ppeReport.total_workers} workers · Model: {ppeReport.detection_model}</span>
               <span className="ce-dropzone-sub">Click to audit another photo</span>
             </>
@@ -473,17 +471,15 @@ export default function VisionEngine() {
             <button className="ce-code-btn ce-code-btn-active">ACM BuildSys '24</button>
           </div>
           {bd3Report && (
-            <div style={{ marginTop: '1.5rem', padding: '1.2rem', background: bd3Report.requires_immediate_action ? '#FFEBEE' : '#E8F5E9', borderRadius: '8px' }}>
-              <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#666', marginBottom: '0.3rem' }}>Primary Class</div>
-              <div style={{ fontSize: '1.4rem', fontWeight: 800, color: bd3Report.requires_immediate_action ? '#D32F2F' : '#2E7D32', textTransform: 'capitalize' }}>
+            <div style={{ marginTop: '1.5rem', padding: '1.25rem 0', borderTop: '1px solid #EAEAEA' }}>
+              <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#999', marginBottom: '0.4rem', fontFamily: "'Inter', sans-serif" }}>Primary Class</div>
+              <div style={{ fontSize: '2.5rem', fontWeight: 200, color: '#111', lineHeight: 1, letterSpacing: '-0.02em', fontFamily: "'Inter', sans-serif", textTransform: 'capitalize' }}>
                 {bd3Report.primary_classification}
               </div>
-              <div style={{ fontSize: '12px', color: '#666', marginTop: '0.3rem' }}>
-                {(bd3Report.confidence * 100).toFixed(1)}% confidence · Surface score: {bd3Report.surface_condition_score.toFixed(0)}/100
+              <div style={{ fontSize: '11px', color: '#BBB', marginTop: '0.4rem', fontFamily: "'Inter', sans-serif" }}>
+                {(bd3Report.confidence * 100).toFixed(1)}% confidence · Surface: {bd3Report.surface_condition_score.toFixed(0)}/100
+                {bd3Report.requires_immediate_action ? ' · Immediate action required' : ''}
               </div>
-              {bd3Report.requires_immediate_action && (
-                <div style={{ marginTop: '0.5rem', fontSize: '12px', fontWeight: 700, color: '#D32F2F' }}>⚠ Immediate action required</div>
-              )}
             </div>
           )}
         </div>
@@ -494,7 +490,7 @@ export default function VisionEngine() {
               {bd3Report.all_defects_found.map((d, i) => (
                 <div key={i} className="ce-violation-card">
                   <div className="ce-violation-header">
-                    <span className="ce-violation-severity" style={{ color: severityColor(d.severity) }}>{d.severity}</span>
+                    <span className="ce-violation-severity">{d.severity}</span>
                     <span className="ce-violation-id" style={{ textTransform: 'capitalize' }}>{d.defect_class}</span>
                   </div>
                   <p className="ce-violation-location">Confidence: {(d.confidence * 100).toFixed(1)}%{d.affected_area_percent ? ` · Area: ${d.affected_area_percent.toFixed(1)}%` : ''}</p>
@@ -530,15 +526,13 @@ export default function VisionEngine() {
             </>
           ) : bd3Error ? (
             <>
-              <span className="ce-dropzone-text" style={{ color: '#D32F2F' }}>Classification Failed</span>
-              <span className="ce-dropzone-sub" style={{ color: '#D32F2F' }}>{bd3Error}</span>
+              <span className="ce-dropzone-text">Classification Failed</span>
+              <span className="ce-dropzone-sub">{bd3Error}</span>
               <span className="ce-dropzone-sub">Click to try again</span>
             </>
           ) : bd3Report ? (
             <>
-              <span className="ce-dropzone-text" style={{ color: bd3Report.requires_immediate_action ? '#D32F2F' : '#2E7D32' }}>
-                ✓ Classified: {bd3Report.primary_classification} ({(bd3Report.confidence * 100).toFixed(1)}%)
-              </span>
+              <span className="ce-dropzone-text">Classified: {bd3Report.primary_classification} ({(bd3Report.confidence * 100).toFixed(1)}%)</span>
               <span className="ce-dropzone-sub">Surface score: {bd3Report.surface_condition_score.toFixed(0)}/100 · {bd3Report.all_defects_found.length} class(es) detected</span>
               <span className="ce-dropzone-sub">Click to classify another photo</span>
             </>
@@ -585,7 +579,7 @@ export default function VisionEngine() {
                   </div>
                   <p className="ce-violation-location">{d.element_type} — {d.measurement_type}</p>
                   <p className="ce-violation-meta">
-                    Designed: <strong>{d.designed_value_mm}mm</strong> · As-Built: <strong>{d.measured_value_mm}mm</strong> · Deviation: <strong style={{ color: d.is_within_tolerance ? '#2E7D32' : '#D32F2F' }}>{d.deviation_mm > 0 ? '+' : ''}{d.deviation_mm}mm</strong>
+                    Designed: <strong>{d.designed_value_mm}mm</strong> · As-Built: <strong>{d.measured_value_mm}mm</strong> · Deviation: <strong style={{ color: d.is_within_tolerance ? '#111' : '#111' }}>{d.deviation_mm > 0 ? '+' : ''}{d.deviation_mm}mm</strong>
                   </p>
                   {d.code_reference && <p className="ce-violation-code">{d.code_reference} (±{d.tolerance_mm}mm tolerance)</p>}
                   {d.recommendation && <p className="ce-violation-fix">{d.recommendation}</p>}
@@ -608,16 +602,13 @@ export default function VisionEngine() {
         <h2 className="ce-section-title" style={{ textAlign: 'center' }}>2. Enter Element Measurements (JSON)</h2>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', width: '100%' }}>
           <div>
-            <label style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#666', display: 'block', marginBottom: '0.5rem' }}>As-Built Elements (site scan)</label>
+            <label style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#999', display: 'block', marginBottom: '0.5rem', fontFamily: "'Inter', sans-serif" }}>As-Built Elements (site scan)</label>
             <textarea
               value={asBuiltJSON}
               onChange={e => setAsBuiltJSON(e.target.value)}
               placeholder={'[\n  {"element_id":"COL-A1","element_type":"column","width_mm":312,...}\n]'}
               style={{
                 width: '100%', minHeight: '180px', padding: '1rem', fontFamily: 'monospace',
-                fontSize: '12px', border: '1px solid #EAEAEA', borderRadius: '6px',
-                resize: 'vertical', background: '#FAFAFA', color: '#111', boxSizing: 'border-box',
-              }}
             />
           </div>
           <div>
@@ -682,29 +673,29 @@ export default function VisionEngine() {
       </div>
 
       <section className="ce-workspace-section">
-        {/* Tab Switcher */}
-        <div style={{
-          display: 'flex', gap: '0', marginBottom: '2.5rem',
-          borderBottom: '2px solid #EAEAEA', overflowX: 'auto',
-        }}>
-          {TABS.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              style={{
-                padding: '0.9rem 1.5rem', background: 'none', border: 'none',
-                borderBottom: activeTab === tab.id ? '2px solid #111' : '2px solid transparent',
-                marginBottom: '-2px', cursor: 'pointer', fontSize: '13px',
-                fontWeight: activeTab === tab.id ? 700 : 500,
-                color: activeTab === tab.id ? '#111' : '#888',
-                letterSpacing: '0.02em', whiteSpace: 'nowrap',
-                transition: 'all 0.2s ease',
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+          {/* Tab Switcher — hairline bottom border, no rounded corners */}
+          <div style={{
+            display: 'flex', gap: '0', marginBottom: '2.5rem',
+            borderBottom: '1px solid #EAEAEA', overflowX: 'auto',
+          }}>
+            {TABS.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                style={{
+                  padding: '0.9rem 1.5rem', background: 'none', border: 'none',
+                  borderBottom: activeTab === tab.id ? '2px solid #111' : '2px solid transparent',
+                  marginBottom: '-1px', cursor: 'pointer', fontSize: '13px',
+                  fontWeight: activeTab === tab.id ? 600 : 400,
+                  color: activeTab === tab.id ? '#111' : '#888',
+                  letterSpacing: '0.02em', whiteSpace: 'nowrap',
+                  fontFamily: "'Inter', sans-serif",
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
 
         {activeTab === 'defect' && renderDefectTab()}
         {activeTab === 'ppe' && renderPPETab()}

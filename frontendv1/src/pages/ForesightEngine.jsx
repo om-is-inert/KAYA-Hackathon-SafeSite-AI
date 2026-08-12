@@ -508,14 +508,14 @@ export default function ForesightEngine() {
         )}
         <button
           className="nav-cta cta-large"
-          style={{ opacity: isTriggering ? 0.7 : 1, background: '#1a1a1a' }}
+          style={{ opacity: isTriggering ? 0.7 : 1 }}
           onClick={handleTriggerLoop}
           disabled={isTriggering}
         >
           {isTriggering ? 'Recalculating...' : '↻ Trigger L1+L2 Recalculation'}
         </button>
         {loopStatus && (
-          <p style={{ fontSize: '13px', color: loopStatus.ok ? '#2E7D32' : '#D32F2F', margin: 0 }}>
+          <p style={{ fontSize: '13px', color: '#555', margin: 0, fontFamily: "'Inter', sans-serif" }}>
             {loopStatus.ok ? '✓' : '✗'} {loopStatus.msg}
           </p>
         )}
