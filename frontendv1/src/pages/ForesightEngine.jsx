@@ -32,7 +32,7 @@ const FORECAST_STEPS = [
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
+const API_BASE = 'https://kaya-hackathon-safesite-ai.onrender.com';
 
 export default function ForesightEngine() {
   const [openStat, setOpenStat] = useState(null);

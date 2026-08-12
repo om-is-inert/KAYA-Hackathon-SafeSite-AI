@@ -46,7 +46,7 @@ const na = (v) => (v === null || v === undefined || v === '' ? 'Not specified' :
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
+const API_BASE = 'https://kaya-hackathon-safesite-ai.onrender.com';
 
 const TABS = [
   { id: 'defect', label: 'Structural Defects' },
