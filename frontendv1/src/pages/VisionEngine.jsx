@@ -609,6 +609,9 @@ export default function VisionEngine() {
               placeholder={'[\n  {"element_id":"COL-A1","element_type":"column","width_mm":312,...}\n]'}
               style={{
                 width: '100%', minHeight: '180px', padding: '1rem', fontFamily: 'monospace',
+                fontSize: '12px', border: '1px solid #D0D0D0',
+                resize: 'vertical', background: '#FAFAFA', color: '#111', boxSizing: 'border-box',
+              }}
             />
           </div>
           <div>
