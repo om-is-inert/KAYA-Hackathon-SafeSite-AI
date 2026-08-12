@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import TextPressure from '../components/TextPressure';
 import ceHeroVideo from '../../Assets/8471078-hd_1920_1080_25fps.mp4';
@@ -89,7 +89,80 @@ export default function ComplianceEngine() {
     } finally {
       setIsLoading(false);
     }
+  }, [selectedCodes]); // ✅ Fixed: was [] — now includes selectedCodes so toggles take effect
+
+  // ── PDF Download ──────────────────────────────────────────────────
+  const [isDownloading, setIsDownloading] = useState(false);
+  const handleDownloadPDF = useCallback(async () => {
+    setIsDownloading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/compliance/report/pdf`);
+      if (!res.ok) throw new Error('No report available. Run an analysis first.');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'compliance_report.pdf';
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsDownloading(false);
+    }
   }, []);
+
+  // ── Code Library Manager ───────────────────────────────────────────
+  const [codeLibOpen, setCodeLibOpen] = useState(false);
+  const [codeList, setCodeList] = useState([]);
+  const [codeLibStatus, setCodeLibStatus] = useState(null);
+  const [isIngesting, setIsIngesting] = useState(false);
+  const codeUploadRef = useRef();
+
+  const fetchCodeList = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/compliance/codes/list`);
+      const data = await res.json();
+      setCodeList(data.codes || []);
+    } catch {
+      setCodeList([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (codeLibOpen) fetchCodeList();
+  }, [codeLibOpen, fetchCodeList]);
+
+  const handleCodeUpload = useCallback(async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setCodeLibStatus('Uploading...');
+    try {
+      const fd = new FormData();
+      fd.append('pdf', file);
+      const res = await fetch(`${API_BASE}/api/v1/compliance/codes/upload`, { method: 'POST', body: fd });
+      const data = await res.json();
+      setCodeLibStatus(`✓ Uploaded "${data.filename}" — ${data.chunks_ingested} chunks ingested`);
+      fetchCodeList();
+    } catch {
+      setCodeLibStatus('✗ Upload failed');
+    }
+  }, [fetchCodeList]);
+
+  const handleIngestAll = useCallback(async () => {
+    setIsIngesting(true);
+    setCodeLibStatus('Ingesting all PDFs from server directory...');
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/compliance/codes/ingest`, { method: 'POST' });
+      const data = await res.json();
+      setCodeLibStatus(`✓ Ingested ${data.total_chunks} chunks across ${data.doc_count} documents`);
+      fetchCodeList();
+    } catch {
+      setCodeLibStatus('✗ Ingest failed');
+    } finally {
+      setIsIngesting(false);
+    }
+  }, [fetchCodeList]);
 
   const severityColor = (sev) => {
     switch (sev) {
@@ -254,6 +327,18 @@ export default function ComplianceEngine() {
             style={{ display: 'none' }}
             onChange={handleUpload}
           />
+          {result && (
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+              <button
+                className="nav-cta cta-large"
+                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', opacity: isDownloading ? 0.7 : 1 }}
+                onClick={handleDownloadPDF}
+                disabled={isDownloading}
+              >
+                {isDownloading ? 'Downloading...' : '↓ Download PDF Report'}
+              </button>
+            </div>
+          )}
           <div
             className="ce-dropzone"
             onClick={() => !isLoading && fileInputRef.current?.click()}
@@ -283,6 +368,68 @@ export default function ComplianceEngine() {
               </>
             )}
           </div>
+        </div>
+        {/* Code Library Manager */}
+        <div style={{ marginTop: '3rem', borderTop: '1px solid #EAEAEA', paddingTop: '2rem' }}>
+          <button
+            onClick={() => setCodeLibOpen(o => !o)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '0.75rem',
+              background: 'none', border: '1px solid #EAEAEA', borderRadius: '6px',
+              padding: '0.75rem 1.5rem', cursor: 'pointer', fontSize: '13px',
+              fontWeight: 600, color: '#444', letterSpacing: '0.05em', textTransform: 'uppercase',
+              width: '100%', justifyContent: 'space-between',
+            }}
+          >
+            <span>⚙ Advanced: Building Code Library Manager</span>
+            <span style={{ fontSize: '11px', color: '#999' }}>{codeLibOpen ? '▲ Collapse' : '▼ Expand'}</span>
+          </button>
+
+          {codeLibOpen && (
+            <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              {/* Current codes list */}
+              <div>
+                <h3 style={{ fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#666', marginBottom: '0.75rem' }}>Ingested Codes</h3>
+                {codeList.length === 0 ? (
+                  <p style={{ fontSize: '13px', color: '#999' }}>No codes found in library. Upload a PDF or trigger ingest.</p>
+                ) : (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    {codeList.map((c, i) => (
+                      <span key={i} style={{ fontSize: '12px', padding: '4px 10px', background: '#F5F5F5', borderRadius: '4px', color: '#333', fontWeight: 500 }}>
+                        {c.name} <span style={{ color: '#999' }}>({c.size_mb} MB)</span>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Actions */}
+              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                <input ref={codeUploadRef} type="file" accept=".pdf" style={{ display: 'none' }} onChange={handleCodeUpload} />
+                <button
+                  className="nav-cta"
+                  style={{ fontSize: '13px', padding: '0.6rem 1.2rem' }}
+                  onClick={() => codeUploadRef.current?.click()}
+                >
+                  + Upload Building Code PDF
+                </button>
+                <button
+                  className="nav-cta"
+                  style={{ fontSize: '13px', padding: '0.6rem 1.2rem', opacity: isIngesting ? 0.7 : 1 }}
+                  onClick={handleIngestAll}
+                  disabled={isIngesting}
+                >
+                  {isIngesting ? 'Ingesting...' : '↻ Ingest All Server PDFs'}
+                </button>
+              </div>
+
+              {codeLibStatus && (
+                <p style={{ fontSize: '13px', color: codeLibStatus.startsWith('✓') ? '#2E7D32' : codeLibStatus.startsWith('✗') ? '#D32F2F' : '#444', margin: 0 }}>
+                  {codeLibStatus}
+                </p>
+              )}
+            </div>
+          )}
         </div>
       </section>
 

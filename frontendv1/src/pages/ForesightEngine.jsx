@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import TextPressure from '../components/TextPressure';
 import feHeroVideo from '../../Assets/14378494_1920_1080_24fps.mp4';
@@ -50,6 +50,73 @@ export default function ForesightEngine() {
 
   /* Claim the pre-warmed video from the pool — runs before GSAP */
   useWarmVideo(feHeroVideo, videoRef, videoWrapRef, 'ce-hero-video');
+
+  // ── Auto-load foresight dashboard on mount ─────────────────────────
+  useEffect(() => {
+    const loadDashboard = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/foresight/dashboard`);
+        if (res.ok) {
+          const data = await res.json();
+          // Only pre-populate if there's real data (not empty defaults)
+          if (data.risk_scenarios && data.risk_scenarios.length > 0) {
+            setRiskReport(data);
+          }
+        }
+      } catch {
+        // Silently fail — backend may not be running yet
+      }
+    };
+    loadDashboard();
+  }, []);
+
+  // ── PDF Download ────────────────────────────────────────────────
+  const [isDownloading, setIsDownloading] = useState(false);
+  const handleDownloadPDF = useCallback(async () => {
+    setIsDownloading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/foresight/report/pdf`);
+      if (!res.ok) throw new Error('No report available. Run a risk simulation first.');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'foresight_report.pdf';
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsDownloading(false);
+    }
+  }, []);
+
+  // ── Feedback Loop Trigger ──────────────────────────────────────────
+  const [isTriggering, setIsTriggering] = useState(false);
+  const [loopStatus, setLoopStatus] = useState(null);
+  const handleTriggerLoop = useCallback(async () => {
+    setIsTriggering(true);
+    setLoopStatus(null);
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/project/loop/trigger`, { method: 'POST' });
+      const data = await res.json();
+      if (data.status === 'no_data') {
+        setLoopStatus({ ok: false, msg: data.message });
+      } else {
+        setLoopStatus({ ok: true, msg: 'Foresight recalculated from latest L1 + L2 data.' });
+        // Refresh the dashboard data
+        const dashRes = await fetch(`${API_BASE}/api/v1/foresight/dashboard`);
+        if (dashRes.ok) {
+          const dashData = await dashRes.json();
+          if (dashData.risk_scenarios && dashData.risk_scenarios.length > 0) setRiskReport(dashData);
+        }
+      }
+    } catch {
+      setLoopStatus({ ok: false, msg: 'Failed to trigger feedback loop. Is the backend running?' });
+    } finally {
+      setIsTriggering(false);
+    }
+  }, []);
 
   const toggleStat = (i) => setOpenStat(prev => (prev === i ? null : i));
 
@@ -422,6 +489,36 @@ export default function ForesightEngine() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* PDF Download + Loop Trigger Bar */}
+      <div style={{
+        display: 'flex', gap: '1rem', justifyContent: 'center', alignItems: 'center',
+        padding: '2rem 4rem', flexWrap: 'wrap', borderTop: '1px solid #EAEAEA',
+      }}>
+        {(riskReport || optimizeResult || forecastResult) && (
+          <button
+            className="nav-cta cta-large"
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', opacity: isDownloading ? 0.7 : 1 }}
+            onClick={handleDownloadPDF}
+            disabled={isDownloading}
+          >
+            {isDownloading ? 'Downloading...' : '↓ Download PDF Report'}
+          </button>
+        )}
+        <button
+          className="nav-cta cta-large"
+          style={{ opacity: isTriggering ? 0.7 : 1, background: '#1a1a1a' }}
+          onClick={handleTriggerLoop}
+          disabled={isTriggering}
+        >
+          {isTriggering ? 'Recalculating...' : '↻ Trigger L1+L2 Recalculation'}
+        </button>
+        {loopStatus && (
+          <p style={{ fontSize: '13px', color: loopStatus.ok ? '#2E7D32' : '#D32F2F', margin: 0 }}>
+            {loopStatus.ok ? '✓' : '✗'} {loopStatus.msg}
+          </p>
+        )}
       </div>
 
       <section className="ce-workspace-section" style={{ paddingTop: 0 }}>
