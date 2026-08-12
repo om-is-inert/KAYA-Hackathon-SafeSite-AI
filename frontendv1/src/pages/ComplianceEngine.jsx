@@ -164,13 +164,12 @@ export default function ComplianceEngine() {
     }
   }, [fetchCodeList]);
 
-  const severityColor = (sev) => {
-    switch (sev) {
-      case 'CRITICAL': return '#D32F2F';
-      case 'HIGH': return '#E65100';
-      case 'MEDIUM': return '#F9A825';
-      case 'LOW': return '#666';
-      default: return '#111';
+  const severityColor = (severity) => {
+    switch (severity) {
+      case 'CRITICAL': return '#111';
+      case 'HIGH': return '#555';
+      case 'MEDIUM': return '#888';
+      default: return '#999';
     }
   };
 
@@ -346,18 +345,18 @@ export default function ComplianceEngine() {
           >
             {isLoading ? (
               <>
-                <span className="ce-dropzone-text">Analyzing blueprint</span>
+                <span className="ce-dropzone-text">Analyzing blueprint parameters...</span>
                 <AnalysisProgress steps={ANALYSIS_STEPS} active={isLoading} />
               </>
             ) : error ? (
               <>
-                <span className="ce-dropzone-text" style={{ color: '#D32F2F' }}>Analysis Failed</span>
-                <span className="ce-dropzone-sub" style={{ color: '#D32F2F' }}>{error}</span>
-                <span className="ce-dropzone-sub">Click to try again</span>
+                <span className="ce-dropzone-text">Analysis Failed</span>
+                <span className="ce-dropzone-sub">{error}</span>
+                <span className="ce-dropzone-sub">Click to try another file</span>
               </>
             ) : result ? (
               <>
-                <span className="ce-dropzone-text" style={{ color: '#2E7D32' }}>✓ Analysis Complete  -  {result.blueprint_filename}</span>
+                <span className="ce-dropzone-text">Analysis Complete  -  {result.blueprint_filename}</span>
                 <span className="ce-dropzone-sub">{result.total_violations} violation{result.total_violations !== 1 ? 's' : ''} found · Score: {result.compliance_score}/100</span>
                 <span className="ce-dropzone-sub">Click to analyze another blueprint</span>
               </>
@@ -469,7 +468,7 @@ export default function ComplianceEngine() {
                     <div className="ce-stat-minimal-value">
                       Detected: {result ? result.total_violations : 0}
                       {result && result.critical_count > 0 && (
-                        <span style={{ color: '#D32F2F', marginLeft: '0.5rem' }}>({result.critical_count} Critical)</span>
+                        <span style={{ color: '#111', marginLeft: '0.5rem' }}>({result.critical_count} Critical)</span>
                       )}
                     </div>
                   </div>

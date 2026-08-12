@@ -103,7 +103,7 @@
   display: inline-flex;
   align-items: center;
   padding: 4px 12px;
-  border-radius: 999px; /* Fully rounded */
+  border: 1px solid #D0D0D0; /* Sharp corners */
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.03em;
@@ -115,18 +115,18 @@
 }
 
 .ce-pill-green {
-  background-color: #16A34A;
-  color: #fff;
+  background-color: #FAFAFA;
+  color: #111;
 }
 
 .ce-pill-blue {
-  background-color: rgba(52, 152, 219, 0.15);
-  color: #3498DB;
+  background-color: #FAFAFA;
+  color: #555;
 }
 
 .ce-pill-purple {
-  background-color: rgba(155, 89, 182, 0.15);
-  color: #9B59B6;
+  background-color: #FAFAFA;
+  color: #111;
 }
 
 .ce-pill-dark {

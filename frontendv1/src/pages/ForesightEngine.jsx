@@ -205,9 +205,9 @@ export default function ForesightEngine() {
   }, []);
 
   const scenarioColor = (scenario) => {
-    if (scenario.includes('On-time')) return '#2E7D32';
-    if (scenario.includes('Minor')) return '#E65100';
-    return '#D32F2F';
+    if (scenario.includes('On-time')) return '#111';
+    if (scenario.includes('Minor')) return '#555';
+    return '#888';
   };
 
   useGSAP(() => {
@@ -328,7 +328,6 @@ export default function ForesightEngine() {
                     borderLeft: `3px solid ${scenarioColor(s.scenario)}`,
                     background: '#FAFAFA',
                     marginBottom: '0.75rem',
-                    borderRadius: '0 4px 4px 0',
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                       <span style={{ fontSize: '14px', fontWeight: 600, color: '#111' }}>{s.scenario}</span>
@@ -344,7 +343,7 @@ export default function ForesightEngine() {
                     <p style={{ fontSize: '12px', color: '#666', margin: 0, fontStyle: 'italic' }}>Trigger: {s.trigger}</p>
                   </div>
                 ))}
-                <div style={{ padding: '0.8rem 1.5rem', background: '#F5F5F5', borderRadius: '4px', marginTop: '0.5rem', fontSize: '12px', color: '#666' }}>
+                <div style={{ padding: '0.8rem 1.5rem', background: '#F5F5F5', marginTop: '0.5rem', fontSize: '12px', color: '#666' }}>
                   Based on {riskReport.monte_carlo_iterations.toLocaleString()} Monte Carlo iterations
                 </div>
               </div>
@@ -539,32 +538,32 @@ export default function ForesightEngine() {
                     fontSize: '13px',
                   }}>
                     <span style={{ width: '140px', fontWeight: 600, color: '#111' }}>{phase.phase}</span>
-                    <div style={{ flex: 1, position: 'relative', height: '24px', background: '#F5F5F5', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ flex: 1, position: 'relative', height: '24px', background: '#F5F5F5', overflow: 'hidden' }}>
                       {/* Planned bar */}
                       <div style={{
-                        position: 'absolute', top: '2px', height: '8px', borderRadius: '4px',
+                        position: 'absolute', top: '2px', height: '8px',
                         background: '#C8C8C8',
                         left: `${(phase.planned_start / 220) * 100}%`,
                         width: `${((phase.planned_end - phase.planned_start) / 220) * 100}%`,
                       }} />
                       {/* Projected bar */}
                       <div style={{
-                        position: 'absolute', top: '14px', height: '8px', borderRadius: '4px',
-                        background: phase.risk_level === 'HIGH' ? '#D32F2F' : phase.risk_level === 'MEDIUM' ? '#E65100' : '#2E7D32',
+                        position: 'absolute', top: '14px', height: '8px',
+                        background: phase.risk_level === 'HIGH' ? '#555' : phase.risk_level === 'MEDIUM' ? '#888' : '#111',
                         left: `${(phase.projected_start / 220) * 100}%`,
                         width: `${((phase.projected_end - phase.projected_start) / 220) * 100}%`,
                       }} />
                     </div>
                     <span style={{
-                      fontSize: '11px', fontWeight: 700, padding: '2px 6px', borderRadius: '3px',
-                      color: phase.risk_level === 'HIGH' ? '#D32F2F' : phase.risk_level === 'MEDIUM' ? '#E65100' : '#2E7D32',
-                      background: phase.risk_level === 'HIGH' ? '#FFEBEE' : phase.risk_level === 'MEDIUM' ? '#FFF3E0' : '#E8F5E9',
+                      fontSize: '11px', fontWeight: 700, padding: '2px 6px', border: '1px solid #D0D0D0',
+                      color: '#111',
+                      background: '#FAFAFA',
                     }}>{phase.risk_level}</span>
                   </div>
                 ))}
                 <div style={{ display: 'flex', gap: '1.5rem', marginTop: '0.75rem', fontSize: '11px', color: '#999' }}>
                   <span>■ Planned</span>
-                  <span style={{ color: '#D32F2F' }}>■ Projected (risk-adjusted)</span>
+                  <span style={{ color: '#555' }}>■ Projected (risk-adjusted)</span>
                 </div>
               </div>
             ) : (
@@ -602,17 +601,17 @@ export default function ForesightEngine() {
             {optimizeResult && optimizeResult.status === 'optimal' ? (
               <div style={{ width: '100%' }}>
                 <div style={{ display: 'flex', gap: '2rem', marginBottom: '1.5rem' }}>
-                  <div style={{ flex: 1, padding: '1rem', background: '#F5F5F5', borderRadius: '6px', textAlign: 'center' }}>
+                  <div style={{ flex: 1, padding: '1rem', background: '#F5F5F5', textAlign: 'center' }}>
                     <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.3rem' }}>Original</div>
                     <div style={{ fontSize: '18px', fontWeight: 700, color: '#111' }}>₹{(optimizeResult.original_cost / 100000).toFixed(1)}L</div>
                   </div>
-                  <div style={{ flex: 1, padding: '1rem', background: '#E8F5E9', borderRadius: '6px', textAlign: 'center' }}>
-                    <div style={{ fontSize: '11px', color: '#2E7D32', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.3rem' }}>Optimized</div>
-                    <div style={{ fontSize: '18px', fontWeight: 700, color: '#2E7D32' }}>₹{(optimizeResult.optimized_cost / 100000).toFixed(1)}L</div>
+                  <div style={{ flex: 1, padding: '1rem', background: '#FAFAFA', border: '1px solid #D0D0D0', textAlign: 'center' }}>
+                    <div style={{ fontSize: '11px', color: '#111', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.3rem' }}>Optimized</div>
+                    <div style={{ fontSize: '18px', fontWeight: 700, color: '#111' }}>₹{(optimizeResult.optimized_cost / 100000).toFixed(1)}L</div>
                   </div>
-                  <div style={{ flex: 1, padding: '1rem', background: '#F5F5F5', borderRadius: '6px', textAlign: 'center' }}>
+                  <div style={{ flex: 1, padding: '1rem', background: '#F5F5F5', textAlign: 'center' }}>
                     <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.3rem' }}>Savings</div>
-                    <div style={{ fontSize: '18px', fontWeight: 700, color: '#2E7D32' }}>{optimizeResult.savings_percent}%</div>
+                    <div style={{ fontSize: '18px', fontWeight: 700, color: '#111' }}>{optimizeResult.savings_percent}%</div>
                   </div>
                 </div>
                 {optimizeResult.resource_allocation.map((task, i) => (
@@ -672,7 +671,7 @@ export default function ForesightEngine() {
                     return (
                       <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
                         <div style={{
-                          width: '100%', background: '#111', borderRadius: '2px 2px 0 0',
+                          width: '100%', background: '#111',
                           height: `${Math.max(height, 5)}%`,
                           transition: 'height 0.3s ease',
                         }} />
@@ -725,9 +724,9 @@ export default function ForesightEngine() {
                       <span style={{ fontWeight: 500, color: '#111' }}>{s.scenario}</span>
                       <span style={{ fontWeight: 700, color: scenarioColor(s.scenario) }}>{(s.probability * 100).toFixed(1)}%</span>
                     </div>
-                    <div style={{ width: '100%', height: '8px', background: '#F0F0F0', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ width: '100%', height: '8px', background: '#F0F0F0', overflow: 'hidden' }}>
                       <div style={{
-                        height: '100%', borderRadius: '4px',
+                        height: '100%',
                         background: scenarioColor(s.scenario),
                         width: `${s.probability * 100}%`,
                         transition: 'width 0.5s ease',
@@ -749,7 +748,7 @@ export default function ForesightEngine() {
       {error && (
         <div style={{
           position: 'fixed', bottom: '2rem', left: '50%', transform: 'translateX(-50%)',
-          background: '#D32F2F', color: '#fff', padding: '1rem 2rem', borderRadius: '8px',
+          background: '#111', color: '#fff', padding: '1rem 2rem',
           fontSize: '14px', fontWeight: 500, zIndex: 1000, boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
           maxWidth: '600px', textAlign: 'center',
         }}>

@@ -230,13 +230,12 @@ export default function VisionEngine() {
     }
   }, []);
 
-  const severityColor = (sev) => {
-    switch (sev) {
-      case 'CRITICAL': return '#D32F2F';
-      case 'HIGH': return '#E65100';
-      case 'MEDIUM': return '#F9A825';
-      case 'LOW': return '#666';
-      default: return '#111';
+  const severityColor = (severity) => {
+    switch (severity) {
+      case 'CRITICAL': return '#111';
+      case 'HIGH': return '#555';
+      case 'MEDIUM': return '#888';
+      default: return '#999';
     }
   };
 
@@ -630,7 +629,7 @@ export default function VisionEngine() {
         </div>
 
         {scan2BIMError && (
-          <p style={{ color: '#D32F2F', fontSize: '13px', marginTop: '1rem', textAlign: 'center' }}>{scan2BIMError}</p>
+          <p style={{ color: '#111', fontSize: '13px', marginTop: '1rem', textAlign: 'center' }}>{scan2BIMError}</p>
         )}
 
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem' }}>
@@ -755,7 +754,7 @@ export default function VisionEngine() {
                     <div className="ce-stat-minimal-value">
                       Detected: {defectReport ? defectReport.total_defects : 0}
                       {defectReport && defectReport.critical_count > 0 && (
-                        <span style={{ color: '#D32F2F', marginLeft: '0.5rem' }}>({defectReport.critical_count} Critical)</span>
+                        <span style={{ color: '#111', marginLeft: '0.5rem' }}>({defectReport.critical_count} Critical)</span>
                       )}
                     </div>
                   </div>
