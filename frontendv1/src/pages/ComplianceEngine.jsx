@@ -181,7 +181,7 @@ export default function ComplianceEngine() {
         start: "top top",
         end: "+=100%", // pin for 100vh extra scrolling
         pin: true,
-        scrub: 1,
+        scrub: true,
       }
     });
 
@@ -200,7 +200,7 @@ export default function ComplianceEngine() {
             trigger: selector,
             start: "top 85%",
             end: "top 60%",
-            scrub: 1.5
+            scrub: true
           }
         }
       );
@@ -217,7 +217,7 @@ export default function ComplianceEngine() {
           trigger: '.ce-stats-container',
           start: "top 85%",
           end: "top 60%",
-          scrub: 1.5
+          scrub: true
         }
       }
     );
@@ -508,7 +508,7 @@ export default function ComplianceEngine() {
 
       {/* Closing Photo Break */}
       <section className="ce-photo-break">
-        <img src={closingPhoto} alt="Compliance Engine Closing" />
+        <img src={closingPhoto} alt="Compliance Engine Closing" loading="lazy" decoding="async" />
       </section>
 
       {/* Story block */}

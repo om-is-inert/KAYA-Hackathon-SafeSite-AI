@@ -218,7 +218,7 @@ export default function ForesightEngine() {
         start: "top top",
         end: "+=100%", // pin for 100vh extra scrolling
         pin: true,
-        scrub: 1,
+        scrub: true,
       }
     });
 
@@ -238,7 +238,7 @@ export default function ForesightEngine() {
             trigger: selector,
             start: "top 85%",
             end: "top 60%",
-            scrub: 1.5
+            scrub: true
           }
         }
       );
@@ -255,7 +255,7 @@ export default function ForesightEngine() {
           trigger: '.ce-stats-container',
           start: "top 85%",
           end: "top 60%",
-          scrub: 1.5
+          scrub: true
         }
       }
     );
@@ -758,7 +758,7 @@ export default function ForesightEngine() {
 
       {/* Closing Photo Break */}
       <section className="ce-photo-break">
-        <img src={closingPhoto} alt="Construction Worker Overhead" />
+        <img src={closingPhoto} alt="Construction Worker Overhead" loading="lazy" decoding="async" />
       </section>
 
       {/* Story block */}

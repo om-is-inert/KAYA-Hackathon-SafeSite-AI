@@ -45,11 +45,13 @@ const TextPressure = ({
   const containerRef = useRef(null);
   const titleRef = useRef(null);
   const spansRef = useRef([]);
+  const spanCentersRef = useRef([]);
 
   const mouseRef = useRef({ x: 0, y: 0 });
   const cursorRef = useRef({ x: 0, y: 0 });
   const isHoveredRef = useRef(false);
   const hoverAmountRef = useRef(0);
+  const titleWidthRef = useRef(0);
 
   const [fontSize, setFontSize] = useState(minFontSize);
   const [scaleY, setScaleY] = useState(1);
@@ -59,11 +61,11 @@ const TextPressure = ({
 
   useEffect(() => {
     if (containerRef.current) {
-      const { left, top, width, height } = containerRef.current.getBoundingClientRect();
-      mouseRef.current.x = left + width / 2;
-      mouseRef.current.y = top + height / 2;
-      cursorRef.current.x = mouseRef.current.x;
-      cursorRef.current.y = mouseRef.current.y;
+      const { width, height } = containerRef.current.getBoundingClientRect();
+      mouseRef.current.x = width / 2;
+      mouseRef.current.y = height / 2;
+      cursorRef.current.x = width / 2;
+      cursorRef.current.y = height / 2;
     }
   }, []);
 
@@ -80,14 +82,27 @@ const TextPressure = ({
     setLineHeight(1);
 
     requestAnimationFrame(() => {
-      if (!titleRef.current) return;
+      if (!titleRef.current || !containerRef.current) return;
       const textRect = titleRef.current.getBoundingClientRect();
+      const containerRect = containerRef.current.getBoundingClientRect();
 
       if (scale && textRect.height > 0) {
         const yRatio = containerH / textRect.height;
         setScaleY(yRatio);
         setLineHeight(yRatio);
       }
+
+      titleWidthRef.current = textRect.width;
+
+      // Cache span centers relative to the container to prevent layout thrashing on hover
+      spanCentersRef.current = spansRef.current.map(span => {
+        if (!span) return { x: 0, y: 0 };
+        const rect = span.getBoundingClientRect();
+        return {
+          x: rect.x + rect.width / 2 - containerRect.x,
+          y: rect.y + rect.height / 2 - containerRect.y
+        };
+      });
     });
   }, [chars.length, minFontSize, scale]);
 
@@ -107,18 +122,14 @@ const TextPressure = ({
       mouseRef.current.x += (cursorRef.current.x - mouseRef.current.x) / 15;
       mouseRef.current.y += (cursorRef.current.y - mouseRef.current.y) / 15;
 
-      if (titleRef.current) {
-        const titleRect = titleRef.current.getBoundingClientRect();
-        const maxDist = titleRect.width / 2;
+      if (titleRef.current && containerRef.current) {
+        const maxDist = titleWidthRef.current / 2;
 
-        spansRef.current.forEach(span => {
+        spansRef.current.forEach((span, i) => {
           if (!span) return;
 
-          const rect = span.getBoundingClientRect();
-          const charCenter = {
-            x: rect.x + rect.width / 2,
-            y: rect.y + rect.height / 2
-          };
+          const charCenter = spanCentersRef.current[i];
+          if (!charCenter) return;
 
           const d = dist(mouseRef.current, charCenter);
 
@@ -191,8 +202,21 @@ const TextPressure = ({
 
   const handleMouseMove = e => {
     isHoveredRef.current = true;
-    cursorRef.current.x = e.clientX;
-    cursorRef.current.y = e.clientY;
+    const container = containerRef.current;
+    if (!container) return;
+    
+    let target = e.nativeEvent.target;
+    let x = e.nativeEvent.offsetX;
+    let y = e.nativeEvent.offsetY;
+    
+    while (target && target !== container) {
+      x += target.offsetLeft;
+      y += target.offsetTop;
+      target = target.offsetParent;
+    }
+    
+    cursorRef.current.x = x;
+    cursorRef.current.y = y;
   };
 
   const handleMouseEnter = () => {
@@ -206,8 +230,13 @@ const TextPressure = ({
   const handleTouchMove = e => {
     isHoveredRef.current = true;
     const t = e.touches[0];
-    cursorRef.current.x = t.clientX;
-    cursorRef.current.y = t.clientY;
+    if (containerRef.current) {
+      // Touch events don't have offsetX/Y, but touch movement is less frequent and getBoundingClientRect is acceptable here if needed,
+      // though ideally we'd just use a cached rect. For now, since hover lag is primarily mouse, this is fine.
+      const rect = containerRef.current.getBoundingClientRect();
+      cursorRef.current.x = t.clientX - rect.x;
+      cursorRef.current.y = t.clientY - rect.y;
+    }
   };
 
   return (

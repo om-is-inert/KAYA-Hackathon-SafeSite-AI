@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import { useLayoutEffect, useEffect } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import gsap from 'gsap';
 import Lenis from 'lenis';
@@ -15,13 +15,19 @@ import Preloader from './components/Preloader';
 function ScrollToTop() {
   const { pathname } = useLocation();
 
-  useLayoutEffect(() => {
-    // Jump to top before paint so GSAP measures the new page from a clean scroll position
-    window.scrollTo(0, 0);
-    // Let the new page's DOM/refs settle, then recompute all ScrollTrigger start/end points
+  useEffect(() => {
+    // Reset Lenis scroll to top instantly on route change
+    if (window.lenis) {
+      window.lenis.scrollTo(0, { immediate: true });
+    } else {
+      window.scrollTo(0, 0);
+    }
+    
+    // Refresh GSAP after the new page DOM settles
     requestAnimationFrame(() => {
       ScrollTrigger.refresh();
     });
+    
   }, [pathname]);
 
   return null;
@@ -35,6 +41,8 @@ function SmoothScroll() {
       smooth: true,
       direction: 'vertical',
     });
+    
+    window.lenis = lenis;
 
     lenis.on('scroll', ScrollTrigger.update);
 
@@ -46,6 +54,7 @@ function SmoothScroll() {
 
     return () => {
       lenis.destroy();
+      window.lenis = null;
       gsap.ticker.remove((time) => {
         lenis.raf(time * 1000);
       });
@@ -60,9 +69,7 @@ function App() {
     <Router>
       <SmoothScroll />
       <ScrollToTop />
-      
       <TopNav />
-
       <Preloader>
         <Routes>
           <Route path="/" element={<Home />} />

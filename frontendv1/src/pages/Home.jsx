@@ -70,7 +70,7 @@ function Home() {
         start: "top top",
         end: "+=100%",
         pin: true,
-        scrub: 1,
+        scrub: true,
       }
     });
 
@@ -85,7 +85,7 @@ function Home() {
         { opacity: 0, x: block.classList.contains('feature-reverse') ? 50 : -50 },
         {
           opacity: 1, x: 0, ease: "power2.in",
-          scrollTrigger: { trigger: block, start: "top 85%", end: "top 50%", scrub: 1.5 }
+          scrollTrigger: { trigger: block, start: "top 85%", end: "top 50%", scrub: true }
         }
       );
 
@@ -93,7 +93,7 @@ function Home() {
         { opacity: 0, scale: 0.95, y: 50 },
         {
           opacity: 1, scale: 1, y: 0, ease: "power2.in",
-          scrollTrigger: { trigger: block, start: "top 95%", end: "top 55%", scrub: 1.5 }
+          scrollTrigger: { trigger: block, start: "top 95%", end: "top 55%", scrub: true }
         }
       );
     });
@@ -102,7 +102,7 @@ function Home() {
       { opacity: 0, y: 50 },
       {
         opacity: 1, y: 0, ease: "power2.out",
-        scrollTrigger: { trigger: '.health-dashboard', start: "top 85%", end: "top 60%", scrub: 1.5 }
+        scrollTrigger: { trigger: '.health-dashboard', start: "top 85%", end: "top 60%", scrub: true }
       }
     );
   }, { scope: containerRef });
@@ -130,20 +130,6 @@ function Home() {
           </div>
           <div className="bottom-left-info">
             <p>AI-Powered Site Inspections That<br />Catch Defects Before They Cost You</p>
-          </div>
-
-          {/* Connection status — minimal text label, no colored pill */}
-          <div style={{
-            position: 'absolute', bottom: '2rem', right: '2rem', zIndex: 10,
-            display: 'flex', alignItems: 'center', gap: '0.5rem',
-            fontSize: '11px', fontWeight: 600, color: 'rgba(255,255,255,0.6)',
-            letterSpacing: '0.12em', textTransform: 'uppercase',
-          }}>
-            <span style={{
-              width: '6px', height: '6px', flexShrink: 0,
-              background: backendOnline === false ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.8)',
-            }} />
-            {backendOnline === null ? 'Connecting...' : backendOnline ? 'Backend Online' : 'Backend Offline'}
           </div>
         </div>
       </div>
@@ -261,7 +247,7 @@ function Home() {
           <div className="feature-blocks">
             <div className="feature-block feature-block-fade">
               <div className="feature-image">
-                <img src={featureImage1} alt="Compliance Engine" />
+                <img src={featureImage1} alt="Compliance Engine" loading="lazy" decoding="async" />
               </div>
               <div className="feature-text">
                 <span className="feature-eyebrow">01  -  Compliance Engine</span>
@@ -279,13 +265,13 @@ function Home() {
                 </p>
               </div>
               <div className="feature-image">
-                <img src={featureImage2} alt="Vision Engine" />
+                <img src={featureImage2} alt="Vision Engine" loading="lazy" decoding="async" />
               </div>
             </div>
 
             <div className="feature-block feature-block-fade">
               <div className="feature-image">
-                <img src={featureImage3} alt="Foresight Engine" />
+                <img src={featureImage3} alt="Foresight Engine" loading="lazy" decoding="async" />
               </div>
               <div className="feature-text">
                 <span className="feature-eyebrow">03  -  Foresight Engine</span>

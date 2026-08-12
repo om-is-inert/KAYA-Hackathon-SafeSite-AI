@@ -7,6 +7,12 @@
 body {
   font-family: 'Inter', sans-serif;
   overflow-x: hidden;
+  background-color: #111;
+}
+
+.app-container {
+  background-color: #FAFAFA;
+  min-height: 100vh;
 }
 
 /* Background gradient matching the reference image */

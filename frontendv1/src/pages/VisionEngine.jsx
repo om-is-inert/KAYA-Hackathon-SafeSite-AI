@@ -246,7 +246,7 @@ export default function VisionEngine() {
         start: "top top",
         end: "+=100%",
         pin: true,
-        scrub: 1,
+        scrub: true,
       }
     });
     tl.to(videoRef.current, { scale: 1.15, ease: "power2.in" }, 0);
@@ -258,7 +258,7 @@ export default function VisionEngine() {
         { opacity: 0, y: 40 },
         {
           opacity: 1, y: 0, ease: "power2.out",
-          scrollTrigger: { trigger: selector, start: "top 85%", end: "top 60%", scrub: 1.5 }
+          scrollTrigger: { trigger: selector, start: "top 85%", end: "top 60%", scrub: true }
         }
       );
     });
@@ -267,7 +267,7 @@ export default function VisionEngine() {
       { opacity: 0, x: -40 },
       {
         opacity: 1, x: 0, ease: "power2.out",
-        scrollTrigger: { trigger: '.ce-stats-container', start: "top 85%", end: "top 60%", scrub: 1.5 }
+        scrollTrigger: { trigger: '.ce-stats-container', start: "top 85%", end: "top 60%", scrub: true }
       }
     );
 
@@ -798,7 +798,7 @@ export default function VisionEngine() {
 
       {/* Closing Photo Break */}
       <section className="ce-photo-break">
-        <img src={closingPhoto} alt="Vision Engine Closing" />
+        <img src={closingPhoto} alt="Vision Engine Closing" loading="lazy" decoding="async" />
       </section>
 
       {/* Story block */}
