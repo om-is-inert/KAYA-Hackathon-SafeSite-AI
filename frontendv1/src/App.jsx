@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import { useLayoutEffect, useState } from 'react';
+import { useLayoutEffect, useEffect } from 'react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import gsap from 'gsap';
+import Lenis from 'lenis';
 import Home from './pages/Home';
 import ComplianceEngine from './pages/ComplianceEngine';
 import VisionEngine from './pages/VisionEngine';
@@ -25,9 +27,38 @@ function ScrollToTop() {
   return null;
 }
 
+function SmoothScroll() {
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smooth: true,
+      direction: 'vertical',
+    });
+
+    lenis.on('scroll', ScrollTrigger.update);
+
+    gsap.ticker.add((time) => {
+      lenis.raf(time * 1000);
+    });
+
+    gsap.ticker.lagSmoothing(0);
+
+    return () => {
+      lenis.destroy();
+      gsap.ticker.remove((time) => {
+        lenis.raf(time * 1000);
+      });
+    };
+  }, []);
+
+  return null;
+}
+
 function App() {
   return (
     <Router>
+      <SmoothScroll />
       <ScrollToTop />
       
       <TopNav />
